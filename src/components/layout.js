@@ -11,6 +11,7 @@ import { useStaticQuery, graphql } from "gatsby"
 
 import Header from "./header"
 import "./layout.css"
+import { Typography, Link } from "@material-ui/core"
 
 const Layout = ({ children }) => {
   const data = useStaticQuery(graphql`
@@ -35,9 +36,14 @@ const Layout = ({ children }) => {
       >
         <main>{children}</main>
         <footer>
-          © {new Date().getFullYear()}, Built with
-          {` `}
-          <a href="https://www.gatsbyjs.org">Gatsby</a>
+          <Typography variant="body2" color="textSecondary" align="center">
+            Built by 
+            {" "}
+            <Link color="inherit" href="https://github.com/oisinkyne/">
+              Oisín Kyne
+            </Link>
+            {'.'}
+          </Typography>
         </footer>
       </div>
     </>
