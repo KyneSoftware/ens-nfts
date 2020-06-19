@@ -5,7 +5,8 @@ import CssBaseline from '@material-ui/core/CssBaseline';
 import TextField from '@material-ui/core/TextField';
 import Link from '@material-ui/core/Link';
 import Grid from '@material-ui/core/Grid';
-import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
+import FiberNewIcon from '@material-ui/icons/FiberNew';
+import ExploreIcon from '@material-ui/icons/Explore';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import Container from '@material-ui/core/Container';
@@ -23,7 +24,7 @@ const useStyles = makeStyles((theme) => ({
   },
   avatar: {
     margin: theme.spacing(1),
-    backgroundColor: theme.palette.secondary.main,
+    backgroundColor: 'rebeccapurple',
   },
   form: {
     width: '100%', // Fix IE 11 issue.
@@ -39,8 +40,30 @@ ENS registry, in future, if the Name isn't in the registry but it's parent is, a
 */
 const handleEnsNameChange = (event) => {
   console.log('ENS input updated: ' + JSON.stringify(event.target.value))
-  event.target.helperText="Unknown ENS name"
+  event.target.helperText = "Unknown ENS name"
   return "Unknown ENS Name"
+}
+
+/*
+Performs namehash on the ENS input, and checks if it's present in the ENS registrar
+*/
+const handleLookupInputChange = (event) => {
+  const ens = event.target.value;
+  console.log('ENS search updated: ' + ens)
+  
+  const nameExists = checkIfEnsExists(ens)  
+  console.log('Does this ENS name exist?: ' + nameExists.toString())
+  return "Unknown ENS Name"
+}
+
+const checkIfEnsExists = (namehash) => {
+  console.log('Checking if valid ENS namehash present in registrar: ' + JSON.stringify(namehash))
+  return false
+}
+
+const handleLookupHelperText = (nameExists) => {
+  console.log('Getting Helper text for this name: ' + JSON.stringify(nameExists))
+  return "Input Helper Text"
 }
 
 export default function IndexPage() {
@@ -52,10 +75,42 @@ export default function IndexPage() {
         <CssBaseline />
         <div className={classes.paper}>
           <Avatar className={classes.avatar}>
-            <LockOutlinedIcon />
+            <ExploreIcon />
           </Avatar>
           <Typography component="h1" variant="h5">
-            Name your NFT
+            Search for a named NFT
+          </Typography>
+          <form className={classes.form} noValidate>
+            <Grid container spacing={2}>
+              <Grid item xs={12}>
+                <TextField
+                  error={checkIfEnsExists}
+                  onChange={handleLookupInputChange}
+                  helperText={"handleLookupHelperText"}
+                  name="ensName"
+                  variant="outlined"
+                  required
+                  fullWidth
+                  id="ensName"
+                  label="ENS Name"
+                />
+              </Grid>
+            </Grid>
+            <Button
+              type="submit"
+              fullWidth
+              variant="contained"
+              color="primary"
+              className={classes.submit}
+            >
+              Lookup NFT
+          </Button>
+          </form>
+          <Avatar className={classes.avatar}>
+            <FiberNewIcon />
+          </Avatar>
+          <Typography component="h1" variant="h5">
+            Name an NFT with ENS
           </Typography>
           <form className={classes.form} noValidate>
             <Grid container spacing={2}>
