@@ -6,6 +6,7 @@
   "author": "Oisín Kyne <oisin@kyne.eu>",
   "dependencies": {
     "@material-ui/core": "^4.10.1",
+    "@material-ui/icons": "^4.9.1",
     "gatsby": "^2.22.15",
     "gatsby-image": "^2.4.5",
     "gatsby-plugin-manifest": "^2.4.9",
