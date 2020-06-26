@@ -5,6 +5,7 @@
 import React, { useState } from "react"
 import { Grid, TextField, Button, makeStyles, Avatar, Typography } from "@material-ui/core"
 import ExploreIcon from '@material-ui/icons/Explore';
+import namehash from 'eth-ens-namehash'
 
 const useStyles = makeStyles((theme) => ({
   paper: {
@@ -36,7 +37,8 @@ export default function SearchEns() {
   const onChange = event => {
     setSearchValue(event.target.value)
     console.log('Searching for : ' + searchValue)
-    setHelperText('Not a valid ENS name')
+    const hash = namehash.hash(searchValue)
+    setHelperText('Searching for ENS: ' + hash)
   }
 
   const onSubmit = event => {

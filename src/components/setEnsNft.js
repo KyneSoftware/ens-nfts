@@ -5,6 +5,7 @@
 import React, { useState } from "react"
 import { Grid, TextField, Button, makeStyles, Avatar, Typography, Link } from "@material-ui/core"
 import FiberNewIcon from '@material-ui/icons/Explore';
+import namehash from 'eth-ens-namehash'
 
 const useStyles = makeStyles((theme) => ({
   paper: {
@@ -53,7 +54,8 @@ export default function SetEnsToNft() {
   // Handle name change
   const onNameChange = event => {
     setEnsName(event.target.value)
-    console.log('Setting an NFT resolver for: ' + ensName)
+    const hash = namehash.hash(ensName)
+    console.log('Setting an NFT resolver for: ' + hash)
     setNameHelperText('The name to point at your NFT')
   }
 
