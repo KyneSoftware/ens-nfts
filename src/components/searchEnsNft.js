@@ -33,9 +33,11 @@ export default function SearchEns() {
   const [searchValue, setSearchValue] = useState('')
   const [helperText, setHelperText] = useState('Search for an NFT by name')
   const [validEnsName, setValidEnsName] = useState(true)
+  const [isLoading, setIsLoading] = useState(false)
 
   const onChange = event => {
     setSearchValue(event.target.value)
+    setValidEnsName(true)
     console.log('Searching for : ' + searchValue)
     const hash = namehash.hash(searchValue)
     setHelperText('Searching for ENS: ' + hash)
@@ -43,9 +45,13 @@ export default function SearchEns() {
 
   const onSubmit = event => {
     event.preventDefault();
+    setIsLoading(true)
     console.log('Searching for ENS NFT: ' + searchValue)
-    setHelperText('Cool name')
-    setValidEnsName(false)
+    setHelperText('Searching')
+    setTimeout(()=> {
+      setValidEnsName(false)
+      setHelperText('ENS NFT not found')
+      setIsLoading(false)}, 1000)
   }
 
   const classes = useStyles();
@@ -64,6 +70,7 @@ export default function SearchEns() {
               onChange={onChange}
               helperText={helperText}
               error={!validEnsName}
+              disabled={isLoading}
               name="ensName"
               variant="outlined"
               required
@@ -83,6 +90,7 @@ export default function SearchEns() {
           variant="contained"
           color="primary"
           className={classes.submit}
+          disabled={isLoading}
         >
           Lookup NFT
       </Button>
