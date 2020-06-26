@@ -30,7 +30,7 @@ const useStyles = makeStyles((theme) => ({
 
 export default function SearchEns() {
   const [searchValue, setSearchValue] = useState('')
-  const [helperText, setHelperText] = useState('Search for an NFT on ENS.')
+  const [helperText, setHelperText] = useState('Search for an NFT by name')
   const [validEnsName, setValidEnsName] = useState(true)
 
   const onChange = event => {
@@ -46,32 +46,9 @@ export default function SearchEns() {
     setValidEnsName(false)
   }
 
-  // function checkIfEnsExists() {
-  //   console.log('Checking if valid ENS namehash present in registrar: ' + JSON.stringify(this.state.searchedEnsName))
-  //   return !!this.state.searchedEnsName
-  // }
-
-  // function handleLookupHelperText(nameExists) {
-  //   console.log('Getting Helper text for this name: ' + JSON.stringify(nameExists))
-  //   return "Input Helper Text"
-  // }
-
-  // function handleLookupInputChange(event) {
-  //   const ens = event.target.value;
-  //   console.log('ENS search updated: ' + ens)
-  //   return true
-  // }
-
-  // function handleEnsNameChange(event) {
-  //   console.log('ENS input updated: ' + JSON.stringify(event.target.value))
-  //   event.target.helperText = "Unknown ENS name"
-  //   return "Unknown ENS Name"
-  // }
-
-
   const classes = useStyles();
   return (
-    <div>
+    <div className={classes.paper}>
       <Avatar className={classes.avatar}>
         <ExploreIcon />
       </Avatar>
