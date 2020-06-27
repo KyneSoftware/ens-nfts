@@ -51,6 +51,9 @@ export default function SetEnsToNft() {
   // Whether tokenID input is valid or should be in an error state
   const [validTokenId, setValidTokenId] = useState(true)
 
+  // Whether to disable input while sending transaction
+  const [isLoading, setIsLoading] = useState(false)
+
   // Handle name change
   const onNameChange = event => {
     setEnsName(event.target.value)
@@ -76,9 +79,14 @@ export default function SetEnsToNft() {
   const onSubmit = event => {
     event.preventDefault();
     console.log('Setting  resolver for: ' + ensName)
-    setValidEnsName(false)
-    setValidTokenId(false)
-    setValidContractAddress(false)
+    setIsLoading(true)
+    setTimeout(()=>{
+      setValidEnsName(false)
+      setValidTokenId(false)
+      setValidContractAddress(false)
+      setIsLoading(false)
+    },1000)
+    
   }
 
 
@@ -98,6 +106,7 @@ export default function SetEnsToNft() {
               error={!validEnsName}
               onChange={onNameChange}
               helperText={nameHelperText}
+              disabled={isLoading}
               name="ensName"
               variant="outlined"
               required
@@ -111,6 +120,7 @@ export default function SetEnsToNft() {
               error={!validContractAddress}
               onChange={onContractChange}
               helperText={contractAddressHelperText}
+              disabled={isLoading}
               variant="outlined"
               required
               fullWidth
@@ -124,6 +134,7 @@ export default function SetEnsToNft() {
               error={!validTokenId}
               onChange={onTokenChange}
               helperText={tokenIdHelperText}
+              disabled={isLoading}
               variant="outlined"
               required
               fullWidth
@@ -138,6 +149,7 @@ export default function SetEnsToNft() {
           fullWidth
           variant="contained"
           color="primary"
+          disabled={isLoading}
           className={classes.submit}
         >
           Set Name
