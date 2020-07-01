@@ -28,6 +28,18 @@ module.exports = {
       },
     },
     `gatsby-theme-material-ui`,
+    // // gatsby third party graphql apis
+    // {
+    //   resolve: "gatsby-source-graphql",
+    //   options: {
+    //     // This type will contain remote schema Query type
+    //     typeName: "ENS",
+    //     // This is the field under which it's accessible
+    //     fieldName: "ens",
+    //     // URL to query from
+    //     url: "https://api.thegraph.com/subgraphs/name/ensdomains/ens",
+    //   },
+    // },
     // this (optional) plugin enables Progressive Web App + Offline functionality
     // To learn more, visit: https://gatsby.dev/offline
     // `gatsby-plugin-offline`,

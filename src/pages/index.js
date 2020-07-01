@@ -1,48 +1,34 @@
 import React from "react"
 import CssBaseline from '@material-ui/core/CssBaseline';
-
-import { makeStyles } from '@material-ui/core/styles';
 import Container from '@material-ui/core/Container';
+import { Web3ReactProvider } from '@web3-react/core'
+import { Web3Provider } from '@ethersproject/providers'
+import { SnackbarProvider } from 'notistack';
 
 import Layout from "../components/layout"
 import SEO from "../components/seo"
 import SearchEns from "../components/searchEnsNft"
 import SetEnsToNft from "../components/setEnsNft";
 
-
-const useStyles = makeStyles((theme) => ({
-  paper: {
-    marginTop: theme.spacing(8),
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-  },
-  avatar: {
-    margin: theme.spacing(1),
-    backgroundColor: 'rebeccapurple',
-  },
-  form: {
-    width: '100%', // Fix IE 11 issue.
-    marginTop: theme.spacing(3),
-  },
-  submit: {
-    margin: theme.spacing(3, 0, 2),
-  },
-}));
-
-
+// For setting up Web3 react provider
+function getWeb3Library(provider) {
+  return new Web3Provider(provider)
+}
 
 export default function IndexPage() {
-  const classes = useStyles();
   return (
-    <Layout>
-      <SEO title="Home" />
-      <Container component="main" maxWidth="xs">
-        <CssBaseline />
-          <SearchEns />
-          <SetEnsToNft />
-      </Container>
-    </Layout>
+    <Web3ReactProvider getLibrary={getWeb3Library}>
+      <SnackbarProvider maxSnack={3}>
+        <Layout>
+          <SEO title="Home" />
+          <Container component="main" maxWidth="xs">
+            <CssBaseline />
+            <SearchEns />
+            <SetEnsToNft />
+          </Container>
+        </Layout>
+      </SnackbarProvider>
+    </Web3ReactProvider>
   )
 }
 

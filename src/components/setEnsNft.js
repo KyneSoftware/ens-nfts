@@ -4,7 +4,7 @@
 
 import React, { useState } from "react"
 import { Grid, TextField, Button, makeStyles, Avatar, Typography, Link } from "@material-ui/core"
-import FiberNewIcon from '@material-ui/icons/Explore';
+import FiberNewIcon from '@material-ui/icons/FiberNew';
 import namehash from 'eth-ens-namehash'
 
 const useStyles = makeStyles((theme) => ({
@@ -24,7 +24,11 @@ const useStyles = makeStyles((theme) => ({
   },
   submit: {
     margin: theme.spacing(3, 0, 2),
+    backgroundColor: 'rebeccapurple',
   },
+  link: {
+    color: 'rebeccapurple'
+  }
 }));
 
 
@@ -156,7 +160,7 @@ export default function SetEnsToNft() {
           </Button>
         <Grid container justify="flex-end">
           <Grid item>
-            <Link href="#" variant="body2">
+            <Link href="#" variant="body2" className={classes.link}>
               Bug report? Click Here
             </Link>
           </Grid>
