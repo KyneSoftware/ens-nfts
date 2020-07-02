@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react"
 import { Web3ReactProvider, useWeb3React } from '@web3-react/core'
 import { InjectedConnector } from '@web3-react/injected-connector'
+import { useSnackbar } from 'notistack';
 
 
-const injected = new InjectedConnector({ supportedChainIds: [1, 2, 3, 4] })
+const injected = new InjectedConnector({ supportedChainIds: [1, 3, 4, 5, 42] })
 
 // Tries to connect to a pre-approved metamask (injected web3)
 export function useEagerConnect() {
@@ -35,26 +36,33 @@ export function useEagerConnect() {
   
   export function useInactiveListener(suppress: boolean = false) {
     const { active, error, activate } = useWeb3React()
+    // Snackbar warnings
+    const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   
     useEffect((): any => {
       const { ethereum } = window as any
       if (ethereum && ethereum.on && !active && !error && !suppress) {
         const handleConnect = () => {
           console.log("Handling 'connect' event")
-          activate(injected)
+          activate(injected).then(()=>{
+            enqueueSnackbar('Web3 Connected', {variant: 'success'})
+          })
         }
         const handleChainChanged = (chainId: string | number) => {
           console.log("Handling 'chainChanged' event with payload", chainId)
+          enqueueSnackbar('Switched to chainId: ' + chainId.toString(), {variant: 'info'})
           activate(injected)
         }
         const handleAccountsChanged = (accounts: string[]) => {
           console.log("Handling 'accountsChanged' event with payload", accounts)
           if (accounts.length > 0) {
+            enqueueSnackbar('Switched to account: ' + accounts[0].toString(), {variant: 'info'})
             activate(injected)
           }
         }
         const handleNetworkChanged = (networkId: string | number) => {
           console.log("Handling 'networkChanged' event with payload", networkId)
+          enqueueSnackbar('Switched to networkId: ' + networkId.toString(), {variant: 'info'})
           activate(injected)
         }
   
