@@ -37,7 +37,11 @@ const Layout = ({ children }) => {
         <main>{children}</main>
         <footer>
           <Typography variant="body2" color="textSecondary" align="center">
-            Built by 
+            This site is an implementation of
+            {" "}
+            <Link href="https://github.com/ethereum/EIPs/pull/2381">EIP 2381.</Link>
+            {" "}
+            Built by
             {" "}
             <Link color="inherit" href="https://github.com/oisinkyne/">
               Oisín Kyne
