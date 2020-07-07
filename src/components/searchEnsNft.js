@@ -3,7 +3,7 @@
  */
 
 import React, { useState } from "react"
-import { Grid, TextField, Button, makeStyles, Avatar, Typography } from "@material-ui/core"
+import { Grid, TextField, Button, makeStyles, Avatar, Typography, CircularProgress } from "@material-ui/core"
 import ExploreIcon from '@material-ui/icons/Explore';
 import namehash from 'eth-ens-namehash'
 import { useWeb3React } from '@web3-react/core'
@@ -35,7 +35,12 @@ const useStyles = makeStyles((theme) => ({
 
 
 export default function SearchEns() {
+  // The value typed into the input textfield
   const [searchValue, setSearchValue] = useState('')
+  // The object containing the details of an NFT (address, tokenId, owner) if found after a search
+  const [nftFound, setNftFound] = useState(false)
+  // The details about the NFT searched for
+  const [nftData, setNftData] = useState({ 'address': null, 'tokenId': null, 'owner': null })
   const [helperText, setHelperText] = useState('Search for an NFT by name')
   const [validEnsName, setValidEnsName] = useState(true)
   const [isLoading, setIsLoading] = useState(false)
@@ -94,40 +99,42 @@ export default function SearchEns() {
   const onSubmit = event => {
     event.preventDefault();
     setIsLoading(true)
+    setNftFound(false)
+    setNftData({ 'address': null, 'tokenId': null, 'owner': null })
     setValidEnsName(true)
     setHelperText('Searching')
-    console.log('Searching for ENS NFT: ' + searchValue) 
-  
+    console.log('Searching for ENS NFT: ' + searchValue)
 
-    // Web3 injected
-    if(connector === undefined){
-      enqueueSnackbar('Please use a metamask enabled browser', {
-      variant: 'error',
-    })
-    setHelperText('Injected Web3 wallet not found')
-    setIsLoading(false)
-    return
-    }
-    // Web3 unlocked
-    else if(connector !== undefined && !active){
-      console.warn('Web3 injected but not enabled.')
-      enqueueSnackbar('Please unlock your metamask', {
-      variant: 'warning',
-    })
-    setHelperText('Wallet not unlocked')
-    setIsLoading(false)
-    return
-    }
-    // Web3 unlocked
-    else if(connector !== undefined && activatingConnector){
-      console.warn('Web3 injected but not enabled.')
-      enqueueSnackbar('Please unlock your metamask', {
-      variant: 'warning',
-    })
-    setHelperText('Wallet not unlocked')
-    setIsLoading(false)
-    return
-    }
+
+    // // Web3 injected
+    // if (connector === undefined) {
+    //   enqueueSnackbar('Please use a metamask enabled browser', {
+    //     variant: 'error',
+    //   })
+    //   setHelperText('Injected Web3 wallet not found')
+    //   setIsLoading(false)
+    //   return
+    // }
+    // // Web3 unlocked
+    // else if (connector !== undefined && !active) {
+    //   console.warn('Web3 injected but not enabled.')
+    //   enqueueSnackbar('Please unlock your metamask', {
+    //     variant: 'warning',
+    //   })
+    //   setHelperText('Wallet not unlocked')
+    //   setIsLoading(false)
+    //   return
+    // }
+    // // Web3 unlocked
+    // else if (connector !== undefined && activatingConnector) {
+    //   console.warn('Web3 injected but not enabled.')
+    //   enqueueSnackbar('Please unlock your metamask', {
+    //     variant: 'warning',
+    //   })
+    //   setHelperText('Wallet not unlocked')
+    //   setIsLoading(false)
+    //   return
+    // }
 
     enqueueSnackbar('Searching', {
       variant: 'default',
@@ -136,6 +143,8 @@ export default function SearchEns() {
     setTimeout(() => {
       setValidEnsName(false)
       setIsLoading(false)
+      setNftFound(true)
+      setNftData({ 'address': '0x0123', 'tokenId': '1', 'owner': '0x0' })
       setHelperText('NFT not found')
       closeSnackbar()
 
@@ -183,6 +192,37 @@ export default function SearchEns() {
           Lookup NFT
       </Button>
       </form>
+      <Grid container alignItems="center" direction="column" spacing={2}>
+        {
+          isLoading && (
+            <Grid item xs={12} >
+              <CircularProgress color="primary" />
+            </Grid>
+          )
+        }
+        {
+          nftFound && (
+            <Grid item xs={12} >
+              <Typography>Contract Address:{" "}
+                {
+                  nftData.address
+                }
+              </Typography>
+              <Typography>Token ID:{" "}
+                {
+                  nftData.tokenId
+                }
+              </Typography>
+              <Typography>Token Owner:{" "}
+                {
+                  nftData.owner
+                }
+              </Typography>
+            </Grid>
+          )
+        }
+      </Grid>
+
     </div>
   )
 }
