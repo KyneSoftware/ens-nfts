@@ -10,6 +10,7 @@ import { useWeb3React } from '@web3-react/core'
 import { useSnackbar, closeSnackbar } from 'notistack';
 
 import { useEagerConnect, useInactiveListener } from '../hooks/web3'
+import { nameExists, getAddr } from '../services/ens'
 
 const useStyles = makeStyles((theme) => ({
   paper: {
@@ -32,7 +33,14 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-
+// Text for helpers and snackbars
+const SEARCH_FOR_NFT_TEXT = 'Search for an NFT by name';
+const SEARCHING_TEXT = 'Searching';
+const NOT_FOUND_TEXT = 'NFT not found';
+const FOUND_TEXT = 'NFT found';
+const ERROR_TEXT = 'There was a problem searching for this NFT';
+const ENS_FORMAT_INCORRECT_TEXT = 'Not a recognised ENS name format';
+const ENS_FORMAT_INVALID_TEXT = 'Cannot parse input as an ENS name';
 
 export default function SearchEns() {
   // The value typed into the input textfield
@@ -41,7 +49,7 @@ export default function SearchEns() {
   const [nftFound, setNftFound] = useState(false)
   // The details about the NFT searched for
   const [nftData, setNftData] = useState({ 'address': null, 'tokenId': null, 'owner': null })
-  const [helperText, setHelperText] = useState('Search for an NFT by name')
+  const [helperText, setHelperText] = useState(SEARCH_FOR_NFT_TEXT)
   const [validEnsName, setValidEnsName] = useState(true)
   const [isLoading, setIsLoading] = useState(false)
   // Snackbar warnings
@@ -61,22 +69,36 @@ export default function SearchEns() {
 
   // handle logic to eagerly connect to the injected ethereum provider, if it exists and has granted access already
   const triedEager = useEagerConnect()
-
   // handle logic to connect in reaction to certain events on the injected ethereum provider, if it exists
   useInactiveListener(!triedEager || !!activatingConnector)
 
-  console.log('Web3 instansiated!')
-  console.log(context)
-  console.log(active)
 
   // When a name is typed into the search box
   const onChange = event => {
-    setSearchValue(event.target.value)
-    setValidEnsName(true)
-    console.log('Searching for : ' + searchValue)
-    const hash = namehash.hash(searchValue)
-    // setHelperText('Searching for ENS: ' + hash)
+    const search = event.target.value
+    setSearchValue(search)
+    
+    // Normalise the input
+    var normalized;
+    try {
+      normalized = namehash.normalize(search)
+    } catch {
+      setValidEnsName(false)
+      setHelperText(ENS_FORMAT_INVALID_TEXT)
+      return
+    }
+    
+    // Should be .eth for now, even though there can be other TLDs (Technically .test is valid on Ropsten but will have to fix that next)
+    const tail = normalized.substr(normalized.length - 4)
+    // console.log(`Normalised version of input: ${search} is ${normalized}. The last 4 chars are: ${tail}`)
 
+    if (search === normalized && tail === '.eth') {
+      setValidEnsName(true)
+      setHelperText(SEARCH_FOR_NFT_TEXT)
+    } else {
+      setValidEnsName(false)
+      setHelperText(ENS_FORMAT_INCORRECT_TEXT)
+    }
   }
 
   /* 
@@ -100,53 +122,63 @@ export default function SearchEns() {
     event.preventDefault();
     setIsLoading(true)
     setNftFound(false)
-    setNftData({ 'address': null, 'tokenId': null, 'owner': null })
+    setNftData({ 'address': null, 'tokenId': null, 'owner': null, 'nameOwner': null })
     setValidEnsName(true)
-    setHelperText('Searching')
+    setHelperText(SEARCHING_TEXT)
     console.log('Searching for ENS NFT: ' + searchValue)
 
-
-    // // Web3 injected
-    // if (connector === undefined) {
-    //   enqueueSnackbar('Please use a metamask enabled browser', {
-    //     variant: 'error',
-    //   })
-    //   setHelperText('Injected Web3 wallet not found')
-    //   setIsLoading(false)
-    //   return
-    // }
-    // // Web3 unlocked
-    // else if (connector !== undefined && !active) {
-    //   console.warn('Web3 injected but not enabled.')
-    //   enqueueSnackbar('Please unlock your metamask', {
-    //     variant: 'warning',
-    //   })
-    //   setHelperText('Wallet not unlocked')
-    //   setIsLoading(false)
-    //   return
-    // }
-    // // Web3 unlocked
-    // else if (connector !== undefined && activatingConnector) {
-    //   console.warn('Web3 injected but not enabled.')
-    //   enqueueSnackbar('Please unlock your metamask', {
-    //     variant: 'warning',
-    //   })
-    //   setHelperText('Wallet not unlocked')
-    //   setIsLoading(false)
-    //   return
-    // }
+    // Web3 injected
+    if (connector === undefined) {
+      enqueueSnackbar('Please use a metamask enabled browser', {
+        variant: 'error',
+      })
+      setHelperText(ERROR_TEXT)
+      setIsLoading(false)
+      return
+    }
+    // Web3 unlocked
+    else if (connector !== undefined && !active) {
+      console.warn('Web3 injected but not enabled.')
+      enqueueSnackbar('Please unlock your metamask', {
+        variant: 'warning',
+      })
+      setHelperText('Wallet not unlocked')
+      setIsLoading(false)
+      return
+    }
+    // Web3 unlocked
+    else if (connector !== undefined && activatingConnector) {
+      console.warn('Web3 injected but not enabled.')
+      enqueueSnackbar('Please unlock your metamask', {
+        variant: 'warning',
+      })
+      setHelperText('Wallet not unlocked')
+      setIsLoading(false)
+      return
+    }
 
     enqueueSnackbar('Searching', {
       variant: 'default',
+    })
+
+
+    // Check if this name exists in the registry
+    nameExists(searchValue)
+    getAddr(searchValue).then(addr => {
+      // Address of this name. 
+      setNftData({...nftData, 'address': addr})
+      setHelperText(FOUND_TEXT)
+      setValidEnsName(true)
     })
 
     setTimeout(() => {
       setValidEnsName(false)
       setIsLoading(false)
       setNftFound(true)
-      setNftData({ 'address': '0x0123', 'tokenId': '1', 'owner': '0x0' })
-      setHelperText('NFT not found')
+      
+      setHelperText(NOT_FOUND_TEXT)
       closeSnackbar()
+      console.log(nftData)
 
     }, 1000)
   }
@@ -213,9 +245,14 @@ export default function SearchEns() {
                   nftData.tokenId
                 }
               </Typography>
-              <Typography>Token Owner:{" "}
+              <Typography>NFT Owner:{" "}
                 {
                   nftData.owner
+                }
+              </Typography>
+              <Typography>Name Owner:{" "}
+                {
+                  nftData.nameOwner
                 }
               </Typography>
             </Grid>

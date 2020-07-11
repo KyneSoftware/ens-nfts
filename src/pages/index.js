@@ -7,6 +7,7 @@ import { SnackbarProvider } from 'notistack';
 
 import Layout from "../components/layout"
 import SEO from "../components/seo"
+import MetamaskOnboarding from "../components/metamaskOnboarding";
 import SearchEns from "../components/searchEnsNft"
 import SetEnsToNft from "../components/setEnsNft";
 
@@ -23,6 +24,7 @@ export default function IndexPage() {
           <SEO title="Home" />
           <Container component="main" maxWidth="xs">
             <CssBaseline />
+            <MetamaskOnboarding />
             <SearchEns />
             <SetEnsToNft />
           </Container>
