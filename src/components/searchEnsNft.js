@@ -10,7 +10,7 @@ import { useWeb3React } from '@web3-react/core'
 import { useSnackbar, closeSnackbar } from 'notistack';
 
 import { useEagerConnect, useInactiveListener } from '../hooks/web3'
-import { nameExists, getAddr } from '../services/ens'
+import { nameExists, getAddr, getResolver, resolverSet, checkSupportsInterface } from '../services/ens'
 
 const useStyles = makeStyles((theme) => ({
   paper: {
@@ -77,7 +77,7 @@ export default function SearchEns() {
   const onChange = event => {
     const search = event.target.value
     setSearchValue(search)
-    
+
     // Normalise the input
     var normalized;
     try {
@@ -87,7 +87,7 @@ export default function SearchEns() {
       setHelperText(ENS_FORMAT_INVALID_TEXT)
       return
     }
-    
+
     // Should be .eth for now, even though there can be other TLDs (Technically .test is valid on Ropsten but will have to fix that next)
     const tail = normalized.substr(normalized.length - 4)
     // console.log(`Normalised version of input: ${search} is ${normalized}. The last 4 chars are: ${tail}`)
@@ -166,16 +166,27 @@ export default function SearchEns() {
     nameExists(searchValue)
     getAddr(searchValue).then(addr => {
       // Address of this name. 
-      setNftData({...nftData, 'address': addr})
+      setNftData({ ...nftData, 'address': addr })
       setHelperText(FOUND_TEXT)
       setValidEnsName(true)
+
+      // Check this contract is an ERC721
+      checkSupportsInterface(addr, '0x80ac58cd')
     })
+
+    // Check if ENS resolver is set
+    getResolver(searchValue).then((resolver) => {
+      // Check if this resolver uses ERC2381
+      checkSupportsInterface(resolver, '0x4b23de55')
+    }
+    )
+
 
     setTimeout(() => {
       setValidEnsName(false)
       setIsLoading(false)
       setNftFound(true)
-      
+
       setHelperText(NOT_FOUND_TEXT)
       closeSnackbar()
       console.log(nftData)
