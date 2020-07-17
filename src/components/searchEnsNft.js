@@ -10,7 +10,7 @@ import { useWeb3React } from '@web3-react/core'
 import { useSnackbar, closeSnackbar } from 'notistack';
 
 import { useEagerConnect, useInactiveListener } from '../hooks/web3'
-import { nameExists, getAddr, getResolver, resolverSet, checkSupportsInterface } from '../services/ens'
+import { nameExists, getAddr, getResolver, resolverSet, checkSupportsInterface, getTokenId } from '../services/ens'
 
 const useStyles = makeStyles((theme) => ({
   paper: {
@@ -38,6 +38,7 @@ const SEARCH_FOR_NFT_TEXT = 'Search for an NFT by name';
 const SEARCHING_TEXT = 'Searching';
 const NOT_FOUND_TEXT = 'NFT not found';
 const FOUND_TEXT = 'NFT found';
+const FOUND_NOT_NFT_TEXT = 'This name does not point to an NFT contract'
 const ERROR_TEXT = 'There was a problem searching for this NFT';
 const ENS_FORMAT_INCORRECT_TEXT = 'Not a recognised ENS name format';
 const ENS_FORMAT_INVALID_TEXT = 'Cannot parse input as an ENS name';
@@ -166,28 +167,47 @@ export default function SearchEns() {
     nameExists(searchValue)
     getAddr(searchValue).then(addr => {
       // Address of this name. 
-      setNftData({ ...nftData, 'address': addr })
-      setHelperText(FOUND_TEXT)
+      console.log(`We have found a contract address for this name: ${searchValue.toString()}: ${addr.toString()}`)
+      setNftData({ ...nftData, 'address': addr.toString() })
       setValidEnsName(true)
 
       // Check this contract is an ERC721
-      checkSupportsInterface(addr, '0x80ac58cd')
+      checkSupportsInterface(addr, '0x80ac58cd').then((supported) => {
+        setNftFound(true)
+        setHelperText(FOUND_TEXT)
+      }).catch(err =>
+        {
+          setNftFound(false)
+          setHelperText(FOUND_NOT_NFT_TEXT)
+        })
+    }).catch((err)=>{
+      setNftFound(false)
+      setHelperText(NOT_FOUND_TEXT)
     })
 
     // Check if ENS resolver is set
     getResolver(searchValue).then((resolver) => {
       // Check if this resolver uses ERC2381
-      checkSupportsInterface(resolver, '0x4b23de55')
-    }
-    )
+      checkSupportsInterface(resolver, '0x4b23de55').then((supportsInterface) => {
+        getTokenId(searchValue, resolver).then((token) => {
+          console.log(`ENS name: ${searchValue}, Associated tokenId: ${token}`)
+          if (!!token) {
+            // We have returned a non zero tokenID from this resolver contract, set it in state.
+            console.log(`We have an ENS token. Adding to state: ${token}`)
+            setNftData({ ...nftData, tokenId: token.toString() })
+          }
+          else {
+            console.log(`tokenID not set. `)
+          }
+        })
+      })
+    })
 
 
     setTimeout(() => {
-      setValidEnsName(false)
-      setIsLoading(false)
-      setNftFound(true)
 
-      setHelperText(NOT_FOUND_TEXT)
+      setIsLoading(false)
+
       closeSnackbar()
       console.log(nftData)
 
