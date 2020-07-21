@@ -18,4 +18,9 @@ But there was one thing I found was missing. You can point a name at an ERC20 to
 
 This repo is a lightweight front end for setting ENS names to point at individual NFTs within an ERC721 contract. Use this site to set ENS names for your most valuable non-fungibles, to really help people appreciate the one-of-a-kind nature of your token. People already know domain names are unique, use that to make your tokens more unique. 
 
-
+## To Do
+- [ ] Rebrand to nft.kyne.eu
+- [ ] Deploy it to the web
+- [ ] Get an SSL cert sorted
+- [ ] Get the set a name working
+- [ ] Make a robust readme describing EIP2381

@@ -77,7 +77,7 @@ export async function getAddr(name: string): Promise<string> {
 }
 
 // Queries a resolver contract for a TokenID
-export async function getTokenId(name: string, resolverAddress: string): string {
+export async function getTokenId(name: string, resolverAddress: string): Promise<string> {
     const { ethereum } = window as any
     const provider = new ethers.providers.Web3Provider(ethereum)
     const resolver = new ethers.Contract(resolverAddress, eip2381ResolverAbi, provider);
@@ -87,6 +87,23 @@ export async function getTokenId(name: string, resolverAddress: string): string 
         return tokenId.toString()
     }).catch((err: any) => {
         console.log(`This isn't a resolver contract that supports EIP2381, cannot query .tokenID() function.`)
+        throw err
+    })
+
+}
+
+
+// Queries the owner of an ENS name
+export async function getEnsOwner(name: string): Promise<string> {
+    const { ethereum } = window as any
+    const provider = new ethers.providers.Web3Provider(ethereum)
+    const ens = new ethers.Contract(ENS_REGISTRY_ADDRESS, ensAbi, provider);
+    const hash = namehash.hash(name)
+    return ens.owner(hash).then((address: any) => {
+        console.log(`getEnsOwner for name: ${name} resulted in: ${address.toString()}`)
+        return address.toString()
+    }).catch((err: any) => {
+        console.log(`Failed to query the ENS registry for the owner of ${name}`)
         throw err
     })
 
