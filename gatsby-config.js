@@ -4,6 +4,7 @@ module.exports = {
     description: `What better way to make it apparent your non fungible is one of a kind than by pointing an ENS name at it.`,
     author: `@oisinkyne`,
   },
+  pathPrefix: '/',
   plugins: [
     `gatsby-plugin-react-helmet`,
     {

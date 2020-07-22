@@ -9,7 +9,7 @@ const ENS_REGISTRY_ADDRESS = '0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e'
 
 // Queries the `recordExists` function in the registry contract
 export async function nameExists(name: string): Promise<boolean> {
-    const { ethereum } = window as any
+    const { ethereum } = typeof window !== `undefined` ? window as any : null
     const provider = new ethers.providers.Web3Provider(ethereum)
 
     return provider.resolveName(name).then(addr => {
@@ -23,7 +23,7 @@ export async function nameExists(name: string): Promise<boolean> {
 
 // Queries the `resolver` function in the registry contract, returns a boolean if a resolver is set
 export async function resolverSet(name: string): Promise<boolean> {
-    const { ethereum } = window as any
+    const { ethereum } = typeof window !== `undefined` ? window as any : null
     const provider = new ethers.providers.Web3Provider(ethereum)
     const ens = new ethers.Contract(ENS_REGISTRY_ADDRESS, ensAbi, provider);
     const hash = namehash.hash(name)
@@ -40,7 +40,7 @@ export async function resolverSet(name: string): Promise<boolean> {
 
 // Returns the address of a resolver contract
 export async function getResolver(name: string): Promise<string> {
-    const { ethereum } = window as any
+    const { ethereum } = typeof window !== `undefined` ? window as any : null
     const provider = new ethers.providers.Web3Provider(ethereum)
     const ens = new ethers.Contract(ENS_REGISTRY_ADDRESS, ensAbi, provider);
     const hash = namehash.hash(name)
@@ -56,8 +56,8 @@ export async function getResolver(name: string): Promise<string> {
 }
 
 // Queries a resolver contract to see if it supports a specific set of functions (EIP-165 supportsInterface)
-export async function checkSupportsInterface(resolverAddress: string, interfaceId: string): boolean {
-    const { ethereum } = window as any
+export async function checkSupportsInterface(resolverAddress: string, interfaceId: string): Promise<boolean> {
+    const { ethereum } = typeof window !== `undefined` ? window as any : null
     const provider = new ethers.providers.Web3Provider(ethereum)
     const resolver = new ethers.Contract(resolverAddress, eip2381ResolverAbi, provider);
     const supports2381 = await resolver.supportsInterface(interfaceId)
@@ -67,7 +67,7 @@ export async function checkSupportsInterface(resolverAddress: string, interfaceI
 
 // Queries a resolver contract for an Ethereum address
 export async function getAddr(name: string): Promise<string> {
-    const { ethereum } = window as any
+    const { ethereum } = typeof window !== `undefined` ? window as any : null
     const provider = new ethers.providers.Web3Provider(ethereum)
 
     return await provider.resolveName(name).then(addr => {
@@ -78,7 +78,7 @@ export async function getAddr(name: string): Promise<string> {
 
 // Queries a resolver contract for a TokenID
 export async function getTokenId(name: string, resolverAddress: string): Promise<string> {
-    const { ethereum } = window as any
+    const { ethereum } = typeof window !== `undefined` ? window as any : null
     const provider = new ethers.providers.Web3Provider(ethereum)
     const resolver = new ethers.Contract(resolverAddress, eip2381ResolverAbi, provider);
     const hash = namehash.hash(name)
@@ -95,7 +95,7 @@ export async function getTokenId(name: string, resolverAddress: string): Promise
 
 // Queries the owner of an ENS name
 export async function getEnsOwner(name: string): Promise<string> {
-    const { ethereum } = window as any
+    const { ethereum } = typeof window !== `undefined` ? window as any : null
     const provider = new ethers.providers.Web3Provider(ethereum)
     const ens = new ethers.Contract(ENS_REGISTRY_ADDRESS, ensAbi, provider);
     const hash = namehash.hash(name)

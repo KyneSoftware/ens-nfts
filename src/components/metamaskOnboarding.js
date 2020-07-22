@@ -47,12 +47,13 @@ export default function MetamaskOnboarding() {
       setAccounts(newAccounts);
     }
     if (MetaMaskOnboarding.isMetaMaskInstalled()) {
-      window.ethereum
+      const { ethereum } = typeof window !== `undefined` ? window : null
+      ethereum
         .request({ method: 'eth_requestAccounts' })
         .then(handleNewAccounts);
-      window.ethereum.on('accountsChanged', handleNewAccounts);
+      ethereum.on('accountsChanged', handleNewAccounts);
       return () => {
-        window.ethereum.off('accountsChanged', handleNewAccounts);
+        ethereum.off('accountsChanged', handleNewAccounts);
       };
     }
   }, []);
@@ -60,7 +61,8 @@ export default function MetamaskOnboarding() {
   // If the Connect to metamask button is clicked, begin to connect to accounts. 
   const onClick = () => {
     if (MetaMaskOnboarding.isMetaMaskInstalled()) {
-      window.ethereum
+      const { ethereum } = typeof window !== `undefined` ? window : null
+      ethereum
         .request({ method: 'eth_requestAccounts' })
         .then((newAccounts) => setAccounts(newAccounts));
     } else {
