@@ -2,7 +2,7 @@
  * Search ENS NFT component that queries connected Ethereum service for an existing NFT pointed to by this name
  */
 
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import { Grid, TextField, Button, makeStyles, Avatar, Typography, CircularProgress } from "@material-ui/core"
 import ExploreIcon from '@material-ui/icons/Explore';
 import namehash from 'eth-ens-namehash'
@@ -37,6 +37,7 @@ const useStyles = makeStyles((theme) => ({
 const SEARCH_FOR_NFT_TEXT = 'Search for an NFT by name';
 const SEARCHING_TEXT = 'Searching';
 const NOT_FOUND_TEXT = 'NFT not found';
+const NO_ADDRESS_SET_TEXT = 'No address set for this name';
 const FOUND_TEXT = 'NFT found';
 const FOUND_NOT_NFT_TEXT = 'This name does not point to an NFT contract'
 const FOUND_NOT_EIP721_TEXT = 'The addressed contract is not ERC721 conformant'
@@ -49,15 +50,162 @@ const ENS_FORMAT_INVALID_TEXT = 'Cannot parse input as an ENS name';
 export default function SearchEns() {
   // The value typed into the input textfield
   const [searchValue, setSearchValue] = useState('')
-  // The object containing the details of an NFT (address, tokenId, owner) if found after a search
+  // This boolean is toggled when search is clicked, then the useEffect triggers to resolve searchValue into an NFT.
+  const [searchClicked, setSearchClicked] = useState(false)
+  // This boolean tracks whether an NFT was found after a search
   const [nftFound, setNftFound] = useState(false)
-  // The details about the NFT searched for
-  const [nftData, setNftData] = useState({ 'address': null, 'tokenId': null, 'owner': null, 'nameOwner': null })
+  // Address that owns the NFT
+  const [nftOwner, setNftOwner] = useState(null)
+  // Address of the NFT ERC721 contract
+  const [nftAddress, setNftAddress] = useState(null)
+  // Token ID of the NFT
+  const [nftTokenId, setNftTokenId] = useState(null)
+  // Address of the owner of the ENS name
+  const [nameOwner, setNameOwner] = useState(null)
+  // The helper text for the search input
   const [helperText, setHelperText] = useState(SEARCH_FOR_NFT_TEXT)
+  // Whether to show an error on the search input if the user tries to search for an invalid ENS name
   const [validEnsName, setValidEnsName] = useState(true)
   const [isLoading, setIsLoading] = useState(false)
-  // Snackbar warnings
+  // Snackbar warnings/info popups
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
+
+  // This effect is triggered when the search button is clicked
+  useEffect(() => {
+
+    // We don't want this search to fire on the first render, only when search is clicked.
+    if (!!searchValue && searchClicked) {
+
+
+      // Set all of the state variables
+      console.log(`Search button has been clicked. searchClicked: ${searchClicked}. Searching for an NFT addressed by ${searchValue}`)
+      setIsLoading(true)
+      setNftFound(false)
+      setNftAddress(null)
+      setNftTokenId(null)
+      setNftOwner(null)
+      setNameOwner(null)
+      setValidEnsName(true)
+      setHelperText(SEARCHING_TEXT)
+      enqueueSnackbar('Searching', {
+        variant: 'default',
+      })
+
+
+      // Try to get the address of this name
+      getAddr(searchValue).then(addr => {
+        // Ensure address is not null
+        if (!!addr) {
+          // Address of this name. 
+          console.log(`We have found a contract address for this name: ${searchValue.toString()}: ${addr.toString()}`)
+          setNftAddress(addr.toString())
+          setValidEnsName(true)
+
+          // Check this contract is an ERC721
+          checkSupportsInterface(addr, '0x80ac58cd').then((supported) => {
+            // Make sure supported === true
+            if (!!supported) {
+              // We know the name resolves to an address, now get the resolver contract is uses and see if it supports EIP2381
+              getResolver(searchValue).then((resolver) => {
+                // Check if this resolver uses ERC2381
+                checkSupportsInterface(resolver, '0x4b23de55').then((supportsInterface) => {
+                  if (!!supportsInterface) {
+                    // So far so good, this resolver contract supports the right interface, and the address is an NFT contract, check if a tokenID is set.
+                    getTokenId(searchValue, resolver).then((token) => {
+                      console.log(`ENS name: ${searchValue}, Associated tokenId: ${token}`)
+                      if (!!token) {
+                        // We have returned a non zero tokenID from this resolver contract, set it in state.
+                        console.log(`We have an ENS token. Adding to state: ${token}`)
+                        setNftTokenId(token.toString())
+                        setNftFound(true)
+                        setHelperText(FOUND_TEXT)
+
+                        // Now retrieve the NFT owner
+                        // Get the owner of this ENS name
+                        getEnsOwner(searchValue).then((ownerAddress) => {
+                          // Owner of this address found
+                          if (!!ownerAddress) {
+                            console.log(`Setting the owner of this ens name: ${ownerAddress}`)
+                            setNftOwner(ownerAddress.toString())
+                            setIsLoading(false)
+                            closeSnackbar()
+                          } else {
+                            console.log(`No owner found for this ENS name: ${ownerAddress}`)
+                            setIsLoading(false)
+                            closeSnackbar()
+                          }
+                        }).catch(err => {
+                          console.error(`Something went wrong getting the owner of the name: ${searchValue}`)
+                        })
+
+                      }
+                      else {
+                        console.log(`tokenID not set. `)
+                        setNftFound(false)
+                        setIsLoading(false)
+                        closeSnackbar()
+                        setHelperText(TOKEN_ID_NOT_SET_TEXT)
+                      }
+                    }).catch(err => {
+                      console.log('There was an error calling tokenID on this resolver contract.')
+                      console.error(err)
+                    })
+                  } else {
+                    setNftFound(false)
+                    setIsLoading(false)
+                    closeSnackbar()
+                    setHelperText(NOT_EIP_2381_TEXT)
+                  }
+
+                }).catch(err => {
+                  console.log(`There was an error checking if this resolver contract supports EIP2381`)
+                  setNftFound(false)
+                  setIsLoading(false)
+                  closeSnackbar()
+                  setHelperText(NOT_EIP_2381_TEXT)
+                })
+              }).catch(err => {
+                console.log(`There was an error getting the resolver contract for this name, despite an address being set for this name.`)
+                console.error(err)
+              })
+            }
+            else {
+              // This address is not ERC721
+              setNftFound(false)
+              setIsLoading(false)
+              closeSnackbar()
+              setHelperText(FOUND_NOT_EIP721_TEXT)
+            }
+          }).catch(err => {
+            // Something went wrong checking supportsInterface(ERC721)
+            setNftFound(false)
+            setIsLoading(false)
+            closeSnackbar()
+            setHelperText(FOUND_NOT_NFT_TEXT)
+          })
+        } else {
+          // This name returned null for the address
+          setNftFound(false)
+          setIsLoading(false)
+          closeSnackbar()
+          setHelperText(NO_ADDRESS_SET_TEXT)
+        }
+      }).catch((err) => {
+        // Something went wrong getting the address of this name
+        setNftFound(false)
+        setIsLoading(false)
+        closeSnackbar()
+        setHelperText(NOT_FOUND_TEXT)
+      })
+    }
+
+
+    return () => {
+      console.log('Cleaning up after a search, setting searchClicked back to false')
+      setIsLoading(false)
+      setSearchClicked(false)
+    }
+  }, [searchClicked])
 
   // Web3 connection
   const context = useWeb3React()
@@ -124,127 +272,38 @@ export default function SearchEns() {
   */
   const onSubmit = event => {
     event.preventDefault();
-    setIsLoading(true)
-    setNftFound(false)
-    setNftData({ 'address': null, 'tokenId': null, 'owner': null, 'nameOwner': null })
-    setValidEnsName(true)
-    setHelperText(SEARCHING_TEXT)
-    console.log('Searching for ENS NFT: ' + searchValue)
+    setSearchClicked(true)
 
     // Web3 injected
-    if (connector === undefined) {
-      enqueueSnackbar('Please use a metamask enabled browser', {
-        variant: 'error',
-      })
-      setHelperText(ERROR_TEXT)
-      setIsLoading(false)
-      return
-    }
-    // Web3 unlocked
-    else if (connector !== undefined && !active) {
-      console.warn('Web3 injected but not enabled.')
-      enqueueSnackbar('Please unlock your metamask', {
-        variant: 'warning',
-      })
-      setHelperText('Wallet not unlocked')
-      setIsLoading(false)
-      return
-    }
-    // Web3 unlocked
-    else if (connector !== undefined && activatingConnector) {
-      console.warn('Web3 injected but not enabled.')
-      enqueueSnackbar('Please unlock your metamask', {
-        variant: 'warning',
-      })
-      setHelperText('Wallet not unlocked')
-      setIsLoading(false)
-      return
-    }
+    // if (connector === undefined) {
+    //   enqueueSnackbar('Please use a metamask enabled browser', {
+    //     variant: 'error',
+    //   })
+    //   setHelperText(ERROR_TEXT)
+    //   setIsLoading(false)
+    //   return
+    // }
+    // // Web3 unlocked
+    // else if (connector !== undefined && !active) {
+    //   console.warn('Web3 injected but not enabled.')
+    //   enqueueSnackbar('Please unlock your metamask', {
+    //     variant: 'warning',
+    //   })
+    //   setHelperText('Wallet not unlocked')
+    //   setIsLoading(false)
+    //   return
+    // }
+    // // Web3 unlocked
+    // else if (connector !== undefined && activatingConnector) {
+    //   console.warn('Web3 injected but not enabled.')
+    //   enqueueSnackbar('Please unlock your metamask', {
+    //     variant: 'warning',
+    //   })
+    //   setHelperText('Wallet not unlocked')
+    //   setIsLoading(false)
+    //   return
+    // }
 
-    enqueueSnackbar('Searching', {
-      variant: 'default',
-    })
-
-
-    // Check if this name exists in the registry
-    nameExists(searchValue)
-    getAddr(searchValue).then(addr => {
-      // Address of this name. 
-      console.log(`We have found a contract address for this name: ${searchValue.toString()}: ${addr.toString()}`)
-      setNftData({ ...nftData, 'address': addr.toString() })
-      setValidEnsName(true)
-
-      // Check this contract is an ERC721
-      checkSupportsInterface(addr, '0x80ac58cd').then((supported) => {
-        if(!!supported){
-        // Check if ENS resolver is set
-        getResolver(searchValue).then((resolver) => {
-          // Check if this resolver uses ERC2381
-          checkSupportsInterface(resolver, '0x4b23de55').then((supportsInterface) => {
-            if (supportsInterface) {
-              getTokenId(searchValue, resolver).then((token) => {
-                console.log(`ENS name: ${searchValue}, Associated tokenId: ${token}`)
-                if (!!token) {
-                  // We have returned a non zero tokenID from this resolver contract, set it in state.
-                  console.log(`We have an ENS token. Adding to state: ${token}`)
-                  setNftData({ ...nftData, tokenId: token.toString() })
-                  setNftFound(true)
-                  setHelperText(FOUND_TEXT)
-
-                  // Now retrieve the NFT owner
-                  // Get the owner of this ENS name
-                  getEnsOwner(searchValue).then((ownerAddress) => {
-                    // Owner of this address found
-                    if (!!ownerAddress) {
-                      console.log(`Setting the owner of this ens name: ${ownerAddress}`)
-                      setNftData({ ...nftData, 'nameOwner': ownerAddress.toString() })
-                    } else {
-                      console.log(`No owner found for this ENS name: ${ownerAddress}`)
-                    }
-                  }).catch(err => {
-                    console.error(`Something went wrong getting the owner of the name: ${searchValue}`)
-                  })
-
-                }
-                else {
-                  console.log(`tokenID not set. `)
-                  setNftFound(false)
-                  setHelperText(TOKEN_ID_NOT_SET_TEXT)
-                }
-              })
-            } else {
-              setNftFound(false)
-              setHelperText(NOT_EIP_2381_TEXT)
-            }
-
-          })
-        })
-      }
-      else {
-        setNftFound(false)
-        setHelperText(FOUND_NOT_NFT_TEXT)
-      }
-      }).catch(err => {
-        setNftFound(false)
-        setHelperText(FOUND_NOT_EIP721_TEXT)
-      })
-
-    }).catch((err) => {
-      setNftFound(false)
-      setHelperText(NOT_FOUND_TEXT)
-    })
-
-
-
-
-    setTimeout(() => {
-
-      setIsLoading(false)
-
-      closeSnackbar()
-      console.log(nftData)
-
-    }, 1000)
   }
 
   const classes = useStyles();
@@ -301,22 +360,22 @@ export default function SearchEns() {
             <Grid item xs={12} >
               <Typography>Contract Address:{" "}
                 {
-                  nftData.address
+                  nftAddress
                 }
               </Typography>
               <Typography>Token ID:{" "}
                 {
-                  nftData.tokenId
+                  nftTokenId
                 }
               </Typography>
               <Typography>NFT Owner:{" "}
                 {
-                  nftData.owner
+                  nftOwner
                 }
               </Typography>
               <Typography>Name Owner:{" "}
                 {
-                  nftData.nameOwner
+                  nameOwner
                 }
               </Typography>
             </Grid>
