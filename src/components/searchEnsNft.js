@@ -3,14 +3,11 @@
  */
 
 import React, { useState, useEffect } from "react"
-import { Grid, TextField, Button, makeStyles, Avatar, Typography, CircularProgress } from "@material-ui/core"
+import { Grid, TextField, Button, makeStyles, Avatar, Typography, CircularProgress, Link } from "@material-ui/core"
 import ExploreIcon from '@material-ui/icons/Explore';
 import namehash from 'eth-ens-namehash'
-import { useWeb3React } from '@web3-react/core'
 import { useSnackbar, closeSnackbar } from 'notistack';
-
-import { useEagerConnect, useInactiveListener } from '../hooks/web3'
-import { nameExists, getAddr, getResolver, resolverSet, checkSupportsInterface, getTokenId, getEnsOwner } from '../services/ens'
+import { getAddr, getResolver, checkSupportsInterface, getTokenId, getEnsOwner } from '../services/ens'
 
 const useStyles = makeStyles((theme) => ({
   paper: {
@@ -70,7 +67,18 @@ export default function SearchEns() {
   // Snackbar warnings/info popups
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
 
-  // This effect is triggered when the search button is clicked
+  /* 
+    Effect triggered when search is clicked.
+
+    - Lookup ENS registry contract
+    - Check if the namehash of this name is present (making sure not to get disrupted by the fallback to the old registry)
+    - See if that ens record has a resolver contract set
+    - See if the resolver responds to an ERC165 in the manner to suggest it supports EIP2381 (0x4b23de55)
+    - If yes: Query the resolvers tokenId() function 
+    - If yes: See if that resolver contract has an address set
+    - If yes: See if that address responds to an ERC165 in the manner to suggest it is an ERC721 contract
+
+  */
   useEffect(() => {
 
     // We don't want this search to fire on the first render, only when search is clicked.
@@ -207,22 +215,6 @@ export default function SearchEns() {
     }
   }, [searchClicked])
 
-  // Web3 connection
-  const context = useWeb3React()
-  const { connector, library, chainId, account, activate, deactivate, active, error } = context
-
-  // handle logic to recognize the connector currently being activated
-  const [activatingConnector, setActivatingConnector] = React.useState()
-  React.useEffect(() => {
-    if (activatingConnector && activatingConnector === connector) {
-      setActivatingConnector(undefined)
-    }
-  }, [activatingConnector, connector])
-
-  // handle logic to eagerly connect to the injected ethereum provider, if it exists and has granted access already
-  const triedEager = useEagerConnect()
-  // handle logic to connect in reaction to certain events on the injected ethereum provider, if it exists
-  useInactiveListener(!triedEager || !!activatingConnector)
 
 
   // When a name is typed into the search box
@@ -253,56 +245,10 @@ export default function SearchEns() {
     }
   }
 
-  /* 
-    When search is clicked.
-    Check:
-    - web3 injected
-    - not connecting
-    - account active
 
-    Then:
-    - Lookup ENS registry contract
-    - Check if the namehash of this name is present (making sure not to get disrupted by the fallback to the old registry)
-    - See if that ens record has a resolver contract set
-    - See if the resolver responds to an ERC165 in the manner to suggest it supports EIP2381 (0x4b23de55)
-    - If yes: Query the resolvers tokenId() function 
-    - If yes: See if that resolver contract has an address set
-    - If yes: See if that address responds to an ERC165 in the manner to suggest it is an ERC721 contract
-
-  */
   const onSubmit = event => {
     event.preventDefault();
     setSearchClicked(true)
-
-    // Web3 injected
-    // if (connector === undefined) {
-    //   enqueueSnackbar('Please use a metamask enabled browser', {
-    //     variant: 'error',
-    //   })
-    //   setHelperText(ERROR_TEXT)
-    //   setIsLoading(false)
-    //   return
-    // }
-    // // Web3 unlocked
-    // else if (connector !== undefined && !active) {
-    //   console.warn('Web3 injected but not enabled.')
-    //   enqueueSnackbar('Please unlock your metamask', {
-    //     variant: 'warning',
-    //   })
-    //   setHelperText('Wallet not unlocked')
-    //   setIsLoading(false)
-    //   return
-    // }
-    // // Web3 unlocked
-    // else if (connector !== undefined && activatingConnector) {
-    //   console.warn('Web3 injected but not enabled.')
-    //   enqueueSnackbar('Please unlock your metamask', {
-    //     variant: 'warning',
-    //   })
-    //   setHelperText('Wallet not unlocked')
-    //   setIsLoading(false)
-    //   return
-    // }
 
   }
 
@@ -358,25 +304,33 @@ export default function SearchEns() {
         {
           nftFound && (
             <Grid item xs={12} >
-              <Typography>Contract Address:{" "}
-                {
-                  nftAddress
-                }
+              <Typography variant="subtitle2">Contract Address:{" "}
+                <Link href={`https://etherscan.io/token/${nftAddress}`} target="_blank" rel="noreferrer">
+                  {
+                    nftAddress
+                  }
+                </Link>
               </Typography>
-              <Typography>Token ID:{" "}
-                {
-                  nftTokenId
-                }
+              <Typography variant="subtitle2">Token ID:{" "}
+                <Link href={`https://etherscan.io/token/${nftAddress}?a=${nftTokenId}`} target="_blank" rel="noreferrer">
+                  {
+                    nftTokenId
+                  }
+                </Link>
               </Typography>
-              <Typography>NFT Owner:{" "}
-                {
-                  nftOwner
-                }
+              <Typography variant="subtitle2">NFT Owner:{" "}
+                <Link href={`https://etherscan.io/address/${nftOwner}`} target="_blank" rel="noreferrer">
+                  {
+                    nftOwner
+                  }
+                </Link>
               </Typography>
-              <Typography>Name Owner:{" "}
-                {
-                  nameOwner
-                }
+              <Typography variant="subtitle2">Name Owner:{" "}
+                <Link href={`https://etherscan.io/address/${nameOwner}`} target="_blank" rel="noreferrer">
+                  {
+                    nameOwner
+                  }
+                </Link>
               </Typography>
             </Grid>
           )
