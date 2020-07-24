@@ -10,6 +10,7 @@ import FileCopy from '@material-ui/icons/FileCopy';
 import namehash from 'eth-ens-namehash'
 import { useSnackbar, closeSnackbar } from 'notistack';
 import { getAddr, getResolver, checkSupportsInterface, getTokenId, getEnsOwner, getNftOwner } from '../services/ens'
+import { NftIcon } from "./NftIcon";
 
 const useStyles = makeStyles((theme) => ({
   paper: {
@@ -371,7 +372,7 @@ export default function SearchEns() {
           nftFound && (
             <Grid item xs={12} >
               <Avatar className={classes.avatar}>
-                <StarsIcon />
+                <NftIcon />
               </Avatar>
               <Typography variant="h6">{searchValue}</Typography>
               {
