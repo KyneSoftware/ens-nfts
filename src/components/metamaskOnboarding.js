@@ -1,14 +1,25 @@
 import MetaMaskOnboarding from '@metamask/onboarding';
 import React from 'react';
-import { Typography, Button, makeStyles } from '@material-ui/core';
+import { Typography, Button, makeStyles, Avatar } from '@material-ui/core';
+import { MetaMaskIcon } from './metaMaskIcon';
 
 const ONBOARD_TEXT = 'Click here to install MetaMask';
 const CONNECT_TEXT = 'Connect Metamask';
 const CONNECTED_TEXT = 'Metamask Connected';
 
 const useStyles = makeStyles((theme) => ({
+  paper: {
+    marginTop: theme.spacing(2),
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+  },
+  avatar: {
+    margin: theme.spacing(1),
+    backgroundColor: 'rebeccapurple',
+  },
   button: {
-    margin: theme.spacing(0, 0, 2),
+    margin: theme.spacing(1, 0, 2),
     backgroundColor: 'rebeccapurple',
   }
 }));
@@ -71,15 +82,23 @@ export default function MetamaskOnboarding() {
   };
   const classes = useStyles();
   return (
-    <Button fullWidth
-      variant="contained"
-      color="primary"
-      disabled={isDisabled}
-      className={classes.button}
-      onClick={onClick}>
-      <Typography>
-        {buttonText}
-      </Typography>
-    </Button>
+    <div className={classes.paper}>
+      {
+        !isDisabled &&
+        <Avatar className={classes.avatar}>
+          <MetaMaskIcon />
+        </Avatar>
+        }
+      <Button fullWidth
+        variant="contained"
+        color="primary"
+        disabled={isDisabled}
+        className={classes.button}
+        onClick={onClick}>
+        <Typography>
+          {buttonText}
+        </Typography>
+      </Button>
+    </div>
   );
 }
