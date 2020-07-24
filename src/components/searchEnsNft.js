@@ -3,7 +3,7 @@
  */
 
 import React, { useState, useEffect } from "react"
-import { Grid, TextField, Button, makeStyles, Avatar, Typography, CircularProgress, Link, Tooltip, IconButton } from "@material-ui/core"
+import { Grid, TextField, Button, makeStyles, Avatar, Typography, CircularProgress, Link, Tooltip, IconButton, List, ListItem, ListItemText, Divider, Paper, Card } from "@material-ui/core"
 import ExploreIcon from '@material-ui/icons/Explore';
 import StarsIcon from '@material-ui/icons/Stars';
 import FileCopy from '@material-ui/icons/FileCopy';
@@ -16,6 +16,13 @@ const useStyles = makeStyles((theme) => ({
   paper: {
     marginTop: theme.spacing(2),
     display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+  },
+  card: {
+    marginTop: theme.spacing(2),
+    display: 'flex',
+    width: '100%',
     flexDirection: 'column',
     alignItems: 'center',
   },
@@ -329,26 +336,19 @@ export default function SearchEns() {
         Search for a named NFT
       </Typography>
       <form className={classes.form} noValidate onSubmit={onSubmit}>
-        <Grid container spacing={2}>
-          <Grid item xs={12}>
-            <TextField
-              onChange={onChange}
-              helperText={helperText}
-              error={!validEnsName}
-              disabled={isLoading}
-              name="ensName"
-              variant="outlined"
-              required
-              fullWidth
-              id="ensName"
-              value={searchValue}
-              label="ENS Name"
-            // InputLabelProps={{
-            //   shrink: true,
-            // }}
-            />
-          </Grid>
-        </Grid>
+        <TextField
+          onChange={onChange}
+          helperText={helperText}
+          error={!validEnsName}
+          disabled={isLoading}
+          name="ensName"
+          variant="outlined"
+          required
+          fullWidth
+          id="ensName"
+          value={searchValue}
+          label="ENS Name"
+        />
         <Button
           type="submit"
           fullWidth
@@ -360,126 +360,148 @@ export default function SearchEns() {
           Lookup NFT
       </Button>
       </form>
-      <Grid container alignItems="center" direction="column" spacing={2}>
-        {
-          isLoading && (
+
+      {
+        isLoading && (
+          <Grid container alignItems="stretch" justify="center" direction="column" spacing={2} fullWidth>
             <Grid item xs={12} >
               <CircularProgress color="primary" />
             </Grid>
-          )
-        }
-        {
-          nftFound && (
-            <Grid item xs={12} >
-              <Avatar className={classes.avatar}>
-                <NftIcon />
-              </Avatar>
-              <Typography variant="h6">{searchValue}</Typography>
+          </Grid>
+        )
+      }
+      {
+        nftFound && (
+
+          <Card variant="outlined" className={classes.card}>
+
+            <Avatar className={classes.avatar}>
+              <NftIcon />
+            </Avatar>
+
+            <Typography component="h1" variant="h5">{searchValue}</Typography>
+
+            <List variant='' fullWidth>
               {
                 nftAddress &&
-                <Typography>Contract Address:{" "}
-                  <Link href={nftContractUrl(nftAddress)} target="_blank" rel="noreferrer">
-                    {
-                      nftAddress.substr(0, 7) + "..." + nftAddress.substr(nftAddress.length - 5)
-                    }
-                  </Link>
-                  {" "}
-                  <Tooltip
-                    PopperProps={{
-                      disablePortal: true,
-                    }}
-                    interactive
-                    onClose={handleNftCopyClose}
-                    open={nftContractTooltipOpen}
-                    disableFocusListener
-                    disableHoverListener
-                    disableTouchListener
-                    title="Copied"
-                  >
-                    <IconButton variant="outlined" aria-label="copy" onClick={handleNftCopy} size="small"><FileCopy variant="outlined" fontSize="inherit" /></IconButton>
-                  </Tooltip>
-                </Typography>
+                <ListItem>
+                  <ListItemText secondary="The address this NFT belongs to">
+                    Contract Address:{" "}
+                    <Link href={nftContractUrl(nftAddress)} target="_blank" rel="noreferrer">
+                      {
+                        nftAddress.substr(0, 7) + "..." + nftAddress.substr(nftAddress.length - 5)
+                      }
+                    </Link>
+                    {" "}
+                    <Tooltip
+                      PopperProps={{
+                        disablePortal: true,
+                      }}
+                      interactive
+                      onClose={handleNftCopyClose}
+                      open={nftContractTooltipOpen}
+                      disableFocusListener
+                      disableHoverListener
+                      disableTouchListener
+                      title="Copied"
+                    >
+                      <IconButton variant="outlined" aria-label="copy" onClick={handleNftCopy} size="small"><FileCopy variant="outlined" fontSize="inherit" /></IconButton>
+                    </Tooltip>
+                  </ListItemText>
+                </ListItem>
               }
+              <Divider />
               {
                 nftTokenId &&
-                <Typography>Token ID:{" "}
-                  <Link href={nftTokenUrl(nftAddress, nftTokenId)} target="_blank" rel="noreferrer">
-                    {
-                      nftTokenId.substr(0, 7) + "..." + nftTokenId.substr(nftTokenId.length - 5)
-                    }
-                  </Link>
-                  {" "}
-                  <Tooltip
-                    PopperProps={{
-                      disablePortal: true,
-                    }}
-                    interactive
-                    onClose={handleTokenCopyClose}
-                    open={nftTokenTooltipOpen}
-                    disableFocusListener
-                    disableHoverListener
-                    disableTouchListener
-                    title="Copied"
-                  >
-                    <IconButton variant="outlined" aria-label="copy" onClick={handleTokenCopy} size="small"><FileCopy variant="outlined" fontSize="inherit" /></IconButton>
-                  </Tooltip>
-                </Typography>
+                <ListItem>
+                  <ListItemText secondary="The ID of this NFT" >Token ID:{" "}
+                    <Link href={nftTokenUrl(nftAddress, nftTokenId)} target="_blank" rel="noreferrer">
+                      {
+                        nftTokenId.substr(0, 7) + "..." + nftTokenId.substr(nftTokenId.length - 5)
+                      }
+                    </Link>
+                    {" "}
+                    <Tooltip
+                      PopperProps={{
+                        disablePortal: true,
+                      }}
+                      interactive
+                      onClose={handleTokenCopyClose}
+                      open={nftTokenTooltipOpen}
+                      disableFocusListener
+                      disableHoverListener
+                      disableTouchListener
+                      title="Copied"
+                    >
+                      <IconButton variant="outlined" aria-label="copy" onClick={handleTokenCopy} size="small"><FileCopy variant="outlined" fontSize="inherit" /></IconButton>
+                    </Tooltip>
+                  </ListItemText>
+                </ListItem>
               }
+              <Divider />
               {
                 nftOwner &&
-                <Typography>NFT Owner:{" "}
-                  <Link href={nftOwnerUrl(nftOwner)} target="_blank" rel="noreferrer">
-                    {
-                      nftOwner.substr(0, 7) + "..." + nftOwner.substr(nftOwner.length - 5)
-                    }
-                  </Link>
-                  {" "}
-                  <Tooltip
-                    PopperProps={{
-                      disablePortal: true,
-                    }}
-                    interactive
-                    onClose={handleTokenOwnerCopyClose}
-                    open={nftOwnerTooltipOpen}
-                    disableFocusListener
-                    disableHoverListener
-                    disableTouchListener
-                    title="Copied"
-                  >
-                    <IconButton variant="outlined" aria-label="copy" onClick={handleTokenOwnerCopy} size="small"><FileCopy variant="outlined" fontSize="inherit" /></IconButton>
-                  </Tooltip>
-                </Typography>
+                <ListItem>
+                  <ListItemText secondary="The current owner of this NFT">
+                    NFT Owner:{" "}
+                    <Link href={nftOwnerUrl(nftOwner)} target="_blank" rel="noreferrer">
+                      {
+                        nftOwner.substr(0, 7) + "..." + nftOwner.substr(nftOwner.length - 5)
+                      }
+                    </Link>
+                    {" "}
+                    <Tooltip
+                      PopperProps={{
+                        disablePortal: true,
+                      }}
+                      interactive
+                      onClose={handleTokenOwnerCopyClose}
+                      open={nftOwnerTooltipOpen}
+                      disableFocusListener
+                      disableHoverListener
+                      disableTouchListener
+                      title="Copied"
+                    >
+                      <IconButton variant="outlined" aria-label="copy" onClick={handleTokenOwnerCopy} size="small"><FileCopy variant="outlined" fontSize="inherit" /></IconButton>
+                    </Tooltip>
+                  </ListItemText>
+                </ListItem>
               }
+              <Divider />
               {
                 nameOwner &&
-                <Typography>Name Owner:{" "}
-                  <Link href={ensOwnerUrl(nameOwner)} target="_blank" rel="noreferrer">
-                    {
-                      nameOwner.substr(0, 7) + "..." + nameOwner.substr(nameOwner.length - 5)
-                    }
-                  </Link>
-                  {" "}
-                  <Tooltip
-                    PopperProps={{
-                      disablePortal: true,
-                    }}
-                    interactive
-                    onClose={handleNameOwnerCopyClose}
-                    open={nameOwnerTooltipOpen}
-                    disableFocusListener
-                    disableHoverListener
-                    disableTouchListener
-                    title="Copied"
-                  >
-                    <IconButton variant="outlined" aria-label="copy" onClick={handleNameOwnerCopy} size="small"><FileCopy variant="outlined" fontSize="inherit" /></IconButton>
-                  </Tooltip>
-                </Typography>
+                <ListItem>
+                  <ListItemText secondary="The address that owns this ENS name">Name Owner:{" "}
+                    <Link href={ensOwnerUrl(nameOwner)} target="_blank" rel="noreferrer">
+                      {
+                        nameOwner.substr(0, 7) + "..." + nameOwner.substr(nameOwner.length - 5)
+                      }
+                    </Link>
+                    {" "}
+                    <Tooltip
+                      PopperProps={{
+                        disablePortal: true,
+                      }}
+                      interactive
+                      onClose={handleNameOwnerCopyClose}
+                      open={nameOwnerTooltipOpen}
+                      disableFocusListener
+                      disableHoverListener
+                      disableTouchListener
+                      title="Copied"
+                    >
+                      <IconButton variant="outlined" aria-label="copy" onClick={handleNameOwnerCopy} size="small"><FileCopy variant="outlined" fontSize="inherit" /></IconButton>
+                    </Tooltip>
+                  </ListItemText>
+                </ListItem>
               }
+            </List>
 
-            </Grid>
-          )
-        }
-      </Grid>
+          </Card>
+
+        )
+      }
+
 
     </div>
   )
