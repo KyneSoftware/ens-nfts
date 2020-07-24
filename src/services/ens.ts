@@ -4,6 +4,7 @@ import { ethers } from 'ethers'
 import namehash from 'eth-ens-namehash'
 import ensAbi from '../abis/ens-registry.json'
 import eip2381ResolverAbi from '../abis/eip2381-resolver.json'
+import erc721Abi from '../abis/erc721-abi.json'
 
 const ENS_REGISTRY_ADDRESS = '0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e'
 
@@ -104,6 +105,22 @@ export async function getEnsOwner(name: string): Promise<string> {
         return address.toString()
     }).catch((err: any) => {
         console.log(`Failed to query the ENS registry for the owner of ${name}`)
+        throw err
+    })
+
+}
+
+// Queries the ownerOf function of the NFT contract
+export async function getNftOwner(contract: string, tokenId: string): Promise<string> {
+    const { ethereum } = typeof window !== `undefined` ? window as any : null
+    const provider = new ethers.providers.Web3Provider(ethereum)
+    const nftContract = new ethers.Contract(contract, erc721Abi, provider);
+
+    return nftContract.ownerOf(tokenId).then((address: any) => {
+        console.log(`getNftOwner for contract address: ${contract} and tokenId: ${tokenId}, resulted in: ${address.toString()}`)
+        return address.toString()
+    }).catch((err: any) => {
+        console.log(`Failed to query the nftContract ${contract} for the ownerOf ${tokenId}`)
         throw err
     })
 

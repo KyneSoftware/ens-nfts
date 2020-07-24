@@ -7,7 +7,7 @@ import { Grid, TextField, Button, makeStyles, Avatar, Typography, CircularProgre
 import ExploreIcon from '@material-ui/icons/Explore';
 import namehash from 'eth-ens-namehash'
 import { useSnackbar, closeSnackbar } from 'notistack';
-import { getAddr, getResolver, checkSupportsInterface, getTokenId, getEnsOwner } from '../services/ens'
+import { getAddr, getResolver, checkSupportsInterface, getTokenId, getEnsOwner, getNftOwner } from '../services/ens'
 
 const useStyles = makeStyles((theme) => ({
   paper: {
@@ -129,12 +129,28 @@ export default function SearchEns() {
                         setHelperText(FOUND_TEXT)
 
                         // Now retrieve the NFT owner
+                        getNftOwner(addr, token).then((nftOwnerAddress) => {
+                          // Owner of this address found
+                          if (!!nftOwnerAddress) {
+                            console.log(`Setting the owner of this NFT: ${nftOwnerAddress}`)
+                            setNftOwner(nftOwnerAddress.toString())
+                            setIsLoading(false)
+                            closeSnackbar()
+                          } else {
+                            console.log(`No owner found for this NFT: ${addr} ${token}`)
+                            setIsLoading(false)
+                            closeSnackbar()
+                          }
+                        }).catch(err => {
+                          console.error(`Something went wrong getting the owner of the NFT: ${addr} ${token}`)
+                        })
+
                         // Get the owner of this ENS name
                         getEnsOwner(searchValue).then((ownerAddress) => {
                           // Owner of this address found
                           if (!!ownerAddress) {
                             console.log(`Setting the owner of this ens name: ${ownerAddress}`)
-                            setNftOwner(ownerAddress.toString())
+                            setNameOwner(ownerAddress.toString())
                             setIsLoading(false)
                             closeSnackbar()
                           } else {
@@ -175,6 +191,7 @@ export default function SearchEns() {
               }).catch(err => {
                 console.log(`There was an error getting the resolver contract for this name, despite an address being set for this name.`)
                 console.error(err)
+                setHelperText(ERROR_TEXT)
               })
             }
             else {
