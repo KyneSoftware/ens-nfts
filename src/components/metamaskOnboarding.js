@@ -88,7 +88,7 @@ export default function MetamaskOnboarding() {
         <Avatar className={classes.avatar}>
           <MetaMaskIcon />
         </Avatar>
-        }
+      }
       <Button fullWidth
         variant="contained"
         color="primary"
