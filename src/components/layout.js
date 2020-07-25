@@ -43,8 +43,8 @@ const Layout = ({ children }) => {
             {" "}
             Built by
             {" "}
-            <Link color="inherit" href="https://github.com/oisinkyne/">
-              Oisín Kyne
+            <Link color="inherit" href="https://oisin.kyne.eu/">
+              Kyne Software
             </Link>
             {'.'}
           </Typography>
