@@ -14,28 +14,28 @@ import { NftIcon } from "./NftIcon";
 
 const useStyles = makeStyles((theme) => ({
   paper: {
-    marginTop: theme.spacing(2),
+    marginTop: theme.spacing(1),
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
   },
   card: {
-    marginTop: theme.spacing(2),
+    marginTop: theme.spacing(1),
     display: 'flex',
     width: '100%',
     flexDirection: 'column',
     alignItems: 'center',
   },
   avatar: {
-    margin: theme.spacing(1),
+    margin: theme.spacing(3,0,1,0),
     backgroundColor: 'rebeccapurple',
   },
   form: {
     width: '100%', // Fix IE 11 issue.
-    marginTop: theme.spacing(3),
+    marginTop: theme.spacing(2),
   },
   submit: {
-    margin: theme.spacing(3, 0, 2),
+    margin: theme.spacing(3, 0, 1),
     backgroundColor: 'rebeccapurple',
   },
 }));
@@ -291,10 +291,15 @@ export default function SearchEns() {
 
 
 
-  // When a name is typed into the search box
+  // When a name is typed into the search box, clear existing found NFT
   const onChange = event => {
     const search = event.target.value
     setSearchValue(search)
+    setNftFound(false)
+    setNftAddress(null)
+    setNftOwner(null)
+    setNameOwner(null)
+    setNftTokenId(null)
 
     // Normalise the input
     var normalized;
