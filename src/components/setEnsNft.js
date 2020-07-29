@@ -6,7 +6,8 @@ import React, { useState, useEffect } from "react"
 import { Grid, TextField, Button, makeStyles, Avatar, Typography, Link } from "@material-ui/core"
 import FiberNewIcon from '@material-ui/icons/FiberNew';
 import namehash from 'eth-ens-namehash'
-import { getEnsOwner, nameExists } from '../services/ens'
+import { getEnsOwner, nameExists, contractExists } from '../services/ens'
+import { ethers } from 'ethers'
 
 const useStyles = makeStyles((theme) => ({
   paper: {
@@ -39,8 +40,12 @@ const NAME_TEXT_INCORRECT = 'Not a recognised ENS name format';
 const NAME_TEXT_NONEXISTANT = 'This ENS name does not exist';
 const NAME_TEXT_UNAUTHORISED = 'Connected account does not own this name';
 const ADDRESS_TEXT_DEFAULT = 'The contract address this NFT is in';
-const ADDRESS_TEXT_NONEXISTANT = 'This contract address doesn\'t exist on this network';
+const ADDRESS_TEXT_INVALID = 'Contract address should start with 0x';
+const ADDRESS_TEXT_INCOMPLETE = 'Not the correct length for a contract address';
+const ADDRESS_TEXT_NONEXISTANT = 'This contract doesn\'t exist on this network';
 const ADDRESS_TEXT_NON_ERC721 = 'This contract address is not ERC721 conformant';
+const ADDRESS_TEXT_CHECKSUM_INVALID = 'The checksum for this address is incorrect';
+const ADDRESS_TEXT_UNKNOWN = 'Unknown Error Occurred';
 const ADDRESS_TEXT_ENTERED = 'The ERC721 Contract address';
 const TOKEN_TEXT_DEFAULT = 'The NFTs unique token ID';
 const TOKEN_TEXT_NONEXISTANT = 'This TokenID is not present in this contract';
@@ -83,7 +88,7 @@ export default function SetEnsToNft() {
   const [showModal, setShowModal] = useState(false)
 
   // The effect that runs when submit is clicked
-  useEffect(() =>{
+  useEffect(() => {
     console.log(`Set Name clicked, checking the validity of these fields before launching confirmation modal.`)
     return () => {
       setSetNameClicked(false)
@@ -91,9 +96,9 @@ export default function SetEnsToNft() {
   }, [setNameClicked])
 
   // The effect that decides whether setName button should be enabled or disabled
-  useEffect(() =>{
+  useEffect(() => {
     console.log(`Checking if setName button should be enabled. isLoading: ${isLoading.toString()}, validEnsName: ${validEnsName.toString()}, validContractAddress: ${validContractAddress.toString()}, validTokenId: ${validTokenId.toString()}, web3Connected: ?`)
-    if(!isLoading && validEnsName && validContractAddress && validTokenId){
+    if (!isLoading && validEnsName && validContractAddress && validTokenId) {
       console.log(`Everything checks out, enabling the setName button for clicking`)
       setSetNameButtonDisabled(false)
     } else {
@@ -136,34 +141,32 @@ export default function SetEnsToNft() {
     console.log(`MouseOut of name, check if it exists.`)
     const exists = await nameExists(ensName)
     console.log(`Does ${ensName} exist? ${exists.toString()}`)
-    if(!!exists){
+    if (!!exists) {
       setValidEnsName(true)
     } else {
       // Don't interfere with an invalid format helper text by checking if this field is otherwise currently okay
-      if(validEnsName) {
+      if (validEnsName) {
         setNameHelperText(NAME_TEXT_NONEXISTANT)
       }
       setValidEnsName(false)
       return
     }
 
-    
     try {
       // Now check if the current account is an admin of the address
-      console.log(`Does accounts[0](${JSON.stringify(window.ethereum)}) control this name?`)
-      const connectedAddress = window.ethereum.selectedAddress
+      const connectedAddress = typeof window !== `undefined` ? window.ethereum.selectedAddress : ''
       console.log(`Checking if ${connectedAddress} is an admin of ${ensName}`)
       const ensOwner = await getEnsOwner(ensName)
 
-      if(connectedAddress.toString().toLowerCase() === ensOwner.toString().toLowerCase()) {
+      if (connectedAddress.toString().toLowerCase() === ensOwner.toString().toLowerCase()) {
         console.log(`The connected account is the owner of this ENS name.`)
       } else {
         console.log(`Connected account is not the owner of this address`)
-        if(!!validEnsName) {
+        if (!!validEnsName) {
           setNameHelperText(NAME_TEXT_UNAUTHORISED)
           setValidEnsName(false)
         }
-        
+
       }
     } catch {
       console.error(`There was an issue accessing the connected ethereum account`)
@@ -173,9 +176,84 @@ export default function SetEnsToNft() {
 
   // Handle contract address input change
   const onContractChange = event => {
-    setContractAddress(event.target.value)
-    console.log('Contract address of NFT: ' + contractAddress)
+    const contract = event.target.value
+    setContractAddress(contract)
+    console.log('Contract address of NFT: ' + contract)
+
+    // Check if the contract address starts with 0x
+    if (contract.substring(0, 2) !== '0x') {
+      setValidContractAddress(false)
+      setContractAddressHelperText(ADDRESS_TEXT_INVALID)
+      return
+    }
+
+    // Check if the contract address is the right length
+    if (contract.length !== 42) {
+      setValidContractAddress(false)
+      setContractAddressHelperText(ADDRESS_TEXT_INCOMPLETE)
+      return
+    }
+
+    // Check if the address checksum is valid
+    try {
+      ethers.utils.getAddress(contract)
+      console.log(`No issues found with address: ${contract}`)
+    } catch (e) {
+      console.log(`There was an error with this contract address`)
+      console.error(e)
+      setValidContractAddress(false)
+      setContractAddressHelperText(ADDRESS_TEXT_CHECKSUM_INVALID)
+      return
+    }
+
+    setValidContractAddress(true)
     setContractAddressHelperText(ADDRESS_TEXT_ENTERED)
+  }
+
+  // When exiting the contract field, check the address exists and that the address is ERC721 conformant
+  const onContractMouseOut = async (event) => {
+    console.log(`MouseOut of contract address, check if it exists.`)
+    try {
+      const exists = await contractExists(contractAddress)
+      console.log(`Does ${contractAddress} exist? ${exists.toString()}`)
+      if (!!exists) {
+        setValidContractAddress(true)
+      } else {
+        // Don't interfere with an invalid format helper text by checking if this field is otherwise currently okay
+        if (validContractAddress) {
+          setContractAddressHelperText(ADDRESS_TEXT_NONEXISTANT)
+        }
+        setValidContractAddress(false)
+        return
+      }
+    } catch (e) {
+      console.log(`There was an exception thrown while checking the validity of the contractAddress we want to set a name to point at.`)
+      console.error(e)
+      setValidContractAddress(false)
+      setContractAddressHelperText(ADDRESS_TEXT_UNKNOWN)
+    }
+
+    // try {
+    //   // Now check if the current account is an admin of the address
+    //   console.log(`Does accounts[0](${JSON.stringify(window.ethereum)}) control this name?`)
+    //   const connectedAddress = window.ethereum.selectedAddress
+    //   console.log(`Checking if ${connectedAddress} is an admin of ${ensName}`)
+    //   const ensOwner = await getEnsOwner(ensName)
+
+    //   if(connectedAddress.toString().toLowerCase() === ensOwner.toString().toLowerCase()) {
+    //     console.log(`The connected account is the owner of this ENS name.`)
+    //   } else {
+    //     console.log(`Connected account is not the owner of this address`)
+    //     if(!!validEnsName) {
+    //       setNameHelperText(NAME_TEXT_UNAUTHORISED)
+    //       setValidEnsName(false)
+    //     }
+
+    //   }
+    // } catch {
+    //   console.error(`There was an issue accessing the connected ethereum account`)
+    // }
+
   }
 
   const onTokenChange = event => {
@@ -191,13 +269,13 @@ export default function SetEnsToNft() {
     setIsLoading(true)
     setSetNameClicked(true)
 
-    setTimeout(()=>{
+    setTimeout(() => {
       setValidEnsName(false)
       setValidTokenId(false)
       setValidContractAddress(false)
       setIsLoading(false)
-    },1000)
-    
+    }, 1000)
+
   }
 
 
@@ -231,6 +309,7 @@ export default function SetEnsToNft() {
             <TextField
               error={!validContractAddress}
               onChange={onContractChange}
+              onBlur={onContractMouseOut}
               helperText={contractAddressHelperText}
               disabled={isLoading}
               variant="outlined"

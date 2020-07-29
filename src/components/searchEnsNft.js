@@ -5,7 +5,6 @@
 import React, { useState, useEffect } from "react"
 import { Grid, TextField, Button, makeStyles, Avatar, Typography, CircularProgress, Link, Tooltip, IconButton, List, ListItem, ListItemText, Divider, Paper, Card } from "@material-ui/core"
 import ExploreIcon from '@material-ui/icons/Explore';
-import StarsIcon from '@material-ui/icons/Stars';
 import FileCopy from '@material-ui/icons/FileCopy';
 import namehash from 'eth-ens-namehash'
 import { useSnackbar, closeSnackbar } from 'notistack';
