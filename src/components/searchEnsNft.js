@@ -376,7 +376,7 @@ export default function SearchEns() {
 
               <Typography component="h1" variant="h5">{searchValue}</Typography>
 
-              <List variant='' fullWidth>
+              <List >
                 {
                   nftAddress &&
                   <ListItem>

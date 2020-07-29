@@ -6,7 +6,7 @@ import React, { useState, useEffect } from "react"
 import { Grid, TextField, Button, makeStyles, Avatar, Typography, Link } from "@material-ui/core"
 import FiberNewIcon from '@material-ui/icons/FiberNew';
 import namehash from 'eth-ens-namehash'
-import { getEnsOwner, nameExists, contractExists, checkContractSupportsInterface } from '../services/ens'
+import { getEnsOwner, nameExists, contractExists, checkContractSupportsInterface, tokenExists } from '../services/ens'
 import { ethers } from 'ethers'
 
 const useStyles = makeStyles((theme) => ({
@@ -41,6 +41,7 @@ const NAME_TEXT_NONEXISTANT = 'This ENS name does not exist';
 const NAME_TEXT_UNAUTHORISED = 'Connected account does not own this name';
 const ADDRESS_TEXT_DEFAULT = 'The contract address this NFT is in';
 const ADDRESS_TEXT_INVALID = 'Contract address should start with 0x';
+const ADDRESS_TEXT_INVALID_CHARS = 'Contract address should be a hexadecimal string';
 const ADDRESS_TEXT_INCOMPLETE = 'Not the correct length for a contract address';
 const ADDRESS_TEXT_NONEXISTANT = 'Contract does not exist on this network';
 const ADDRESS_TEXT_NON_ERC721 = 'Contract is not an ERC721 type';
@@ -50,14 +51,14 @@ const ADDRESS_TEXT_ENTERED = 'The ERC721 Contract address';
 const TOKEN_TEXT_DEFAULT = 'The NFTs unique token ID';
 const TOKEN_TEXT_NONEXISTANT = 'This TokenID is not present in this contract';
 const TOKEN_TEXT_INVALID = 'TokenID should be a number';
-const TOKEN_TEXT_INCORRECT = 'This TokenID is not the right length';
 const TOKEN_TEXT_ENTERED = 'The unique ID of your NFT';
+const TOKEN_TEXT_FOUND = 'Cool NFT, I like it';
 
 export default function SetEnsToNft() {
   // ENS name to set
   const [ensName, setEnsName] = useState('')
   // ERC721 Contract Address to resolve the name to
-  const [contractAddress, setContractAddress] = useState('0x0')
+  const [contractAddress, setContractAddress] = useState('')
   // TokenID within contract address, for setting EIP2381 resolver
   const [tokenId, setTokenId] = useState('')
 
@@ -98,7 +99,7 @@ export default function SetEnsToNft() {
   // The effect that decides whether setName button should be enabled or disabled
   useEffect(() => {
     console.log(`Checking if setName button should be enabled. isLoading: ${isLoading.toString()}, validEnsName: ${validEnsName.toString()}, validContractAddress: ${validContractAddress.toString()}, validTokenId: ${validTokenId.toString()}, web3Connected: ?`)
-    if (!isLoading && validEnsName && validContractAddress && validTokenId) {
+    if (!isLoading && validEnsName && validContractAddress && validTokenId && ensName !== '' && contractAddress !== '' && tokenId !== '') {
       console.log(`Everything checks out, enabling the setName button for clicking`)
       setSetNameButtonDisabled(false)
     } else {
@@ -166,7 +167,6 @@ export default function SetEnsToNft() {
           setNameHelperText(NAME_TEXT_UNAUTHORISED)
           setValidEnsName(false)
         }
-
       }
     } catch {
       console.error(`There was an issue accessing the connected ethereum account`)
@@ -184,6 +184,13 @@ export default function SetEnsToNft() {
     if (contract.substring(0, 2) !== '0x') {
       setValidContractAddress(false)
       setContractAddressHelperText(ADDRESS_TEXT_INVALID)
+      return
+    }
+
+    // Check the contract address is a hex number
+    if (!contract.match(/^(0x)?[0-9a-fA-F]{40}$/)) {
+      setValidContractAddress(false)
+      setContractAddressHelperText(ADDRESS_TEXT_INVALID_CHARS)
       return
     }
 
@@ -256,10 +263,45 @@ export default function SetEnsToNft() {
 
   }
 
-  const onTokenChange = event => {
-    setTokenId(event.target.value)
-    console.log('Token ID : ' + tokenId)
+  // Checks the token input is a numerical string
+  const onTokenChange = async (event) => {
+    const token = event.target.value
+    console.log('Token ID : ' + token)
+    setTokenId(token)
+
+    // Check token contains only digits
+    if(!token.match(/(^[0-9]+$)/)){
+      setValidTokenId(false)
+      setTokenIdHelperText(TOKEN_TEXT_INVALID)
+      return
+    }
+
+    setValidTokenId(true)
     setTokenIdHelperText(TOKEN_TEXT_ENTERED)
+  }
+
+  // When exiting the TokenId field, check the token exists within the contract address 
+  const onTokenMouseOut = async (event) => {
+    const token = event.target.value
+    console.log(`MouseOut of tokenID, check if ${token} exists in contract ${contractAddress}.`)
+
+    tokenExists(contractAddress, tokenId).then((exists)=>{
+      console.log(`Token ${tokenId} exists in contract ${contractAddress}. ${!!exists.toString()}`)
+      if(!!exists){
+        setValidTokenId(true)
+        setTokenIdHelperText(TOKEN_TEXT_FOUND)
+      } else {
+        console.log(`This token ${tokenId} was not found in contract ${contractAddress}`)
+        setValidTokenId(false)
+        setTokenIdHelperText(TOKEN_TEXT_NONEXISTANT)
+      }
+
+    }).catch((err)=>{
+      console.error(`There was an error thrown while checking if ${tokenId} exists on contract ${contractAddress}`)
+      console.error(err)
+      setValidTokenId(false)
+      setTokenIdHelperText(TOKEN_TEXT_NONEXISTANT)
+    })
   }
 
   // Triggers a contract interaction to set a name
@@ -324,6 +366,7 @@ export default function SetEnsToNft() {
             <TextField
               error={!validTokenId}
               onChange={onTokenChange}
+              onBlur={onTokenMouseOut}
               helperText={tokenIdHelperText}
               disabled={isLoading}
               variant="outlined"

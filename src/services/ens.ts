@@ -39,6 +39,22 @@ export async function contractExists(address: string): Promise<boolean> {
     })
 }
 
+// Checks if a token exists on an erc721 contract
+export async function tokenExists(address: string, token: string): Promise<boolean> {
+    const { ethereum } = typeof window !== `undefined` ? window as any : null
+    const provider = new ethers.providers.Web3Provider(ethereum)
+    const contract = new ethers.Contract(address, erc721Abi , provider);
+
+    return contract.ownerOf(token).then((owner: any) => {
+        console.log(`ens.ts(tokenExists): ${token} in ${address} exists on this network. ${!!owner.toString()}. Token Owner: ${owner.toString()}`)
+        return !!owner && owner !== '0x0000000000000000000000000000000000000000'
+    }).catch((err: any) => {
+        console.log(`ens.ts(tokenExists): There was an error checking if ${token} exists within ${address} on the network.`)
+        console.error(err)
+        return false
+    })
+}
+
 // Queries the `resolver` function in the registry contract, returns a boolean if a resolver is set
 export async function resolverSet(name: string): Promise<boolean> {
     const { ethereum } = typeof window !== `undefined` ? window as any : null
