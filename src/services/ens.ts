@@ -12,11 +12,13 @@ const ENS_REGISTRY_ADDRESS = '0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e'
 export async function nameExists(name: string): Promise<boolean> {
     const { ethereum } = typeof window !== `undefined` ? window as any : null
     const provider = new ethers.providers.Web3Provider(ethereum)
+    const ens = new ethers.Contract(ENS_REGISTRY_ADDRESS, ensAbi, provider);
+    const hash = namehash.hash(name)
 
-    return provider.resolveName(name).then(addr => {
-        console.log(`ens.ts: ens.resolveName(${name}) returned: ${addr}`)
-        return !!addr
-    }).catch(err => {
+    return ens.recordExists(hash).then((exists: boolean) => {
+        console.log(`ens.ts: ens.recordExists(${name}) returned: ${exists}`)
+        return !!exists
+    }).catch((err: any) => {
         console.log(`There was an error resolving this ENS name: ${name}. ${err.toString()}`)
         return false
     })
