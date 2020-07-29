@@ -390,7 +390,7 @@ export default function SetEnsToNft() {
           </Button>
         <Grid container justify="flex-end">
           <Grid item>
-            <Link href="#" variant="body2" className={classes.link}>
+            <Link href="https://github.com/OisinKyne/ens_nfts/issues/" variant="body2" className={classes.link} target="_blank" rel="noreferrer">
               Bug report? Click Here
             </Link>
           </Grid>

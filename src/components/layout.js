@@ -39,11 +39,11 @@ const Layout = ({ children }) => {
           <Typography variant="body2" color="textSecondary" align="center">
             This site is an implementation of
             {" "}
-            <Link href="https://github.com/ethereum/EIPs/pull/2381">EIP 2381.</Link>
+            <Link href="https://github.com/ethereum/EIPs/pull/2381" target="_blank" rel="noreferrer">EIP 2381.</Link>
             {" "}
             Built by
             {" "}
-            <Link color="inherit" href="https://oisin.kyne.eu/">
+            <Link color="inherit" href="https://oisin.kyne.eu/" target="_blank" rel="noreferrer">
               Kyne Software
             </Link>
             {'.'}

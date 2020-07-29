@@ -32,14 +32,15 @@ This repo is a lightweight front end for setting ENS names to point at individua
 - [ ] Deploy it to the web
 - [ ] Get an SSL cert sorted
 - [ ] Get the set a name working
-    - [ ] ENS Name field should query the existence of the name in the registry
-    - [ ] NFT contract address should query the contract exists and responds to ERC165 asking if its an NFT
-    - [ ] Token ID should check if it exists in the NFT
+    - [x] ENS Name field should query the existence of the name in the registry
+    - [x] NFT contract address should query the contract exists and responds to ERC165 asking if its an NFT
+    - [x] Token ID should check if it exists in the NFT
+    - [ ] These checks should run as effects rather than as onBlurs, maybe with a debounce
     - [ ] Set Name should launch a confirmation modal
     - [ ] Confirmation modal should launch a metamask transaction
-- [ ] Make a robust readme describing EIP2381
 - [x] Get a metamask icon above the connect metamask button
-- [ ] Get colour schemes fixed up (primary + secondary, snackbars)
 - [x] Get a better NFT found display (flashy icon, no line wrapping, maybe getting NFT metadata?)
 - [x] Get click to copy to clipboard buttons working for NFT found data
 - [ ] Have search and set buttons disabled until metamask is connected
+- [ ] Get colour schemes fixed up (primary + secondary, snackbars)
+- [ ] Make a robust readme describing EIP2381

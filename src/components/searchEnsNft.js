@@ -77,7 +77,10 @@ export default function SearchEns() {
   const [helperText, setHelperText] = useState(SEARCH_FOR_NFT_TEXT)
   // Whether to show an error on the search input if the user tries to search for an invalid ENS name
   const [validEnsName, setValidEnsName] = useState(true)
+  // While the component is calling the injected Ethereum provider to lookup the ENS name
   const [isLoading, setIsLoading] = useState(false)
+  // Whether the search button should be disabled
+  const [searchDisabled, setSearchDisabled] = useState(true)
   // Snackbar warnings/info popups
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
 
@@ -120,6 +123,14 @@ export default function SearchEns() {
     setNameOwnerTooltipOpen(true);
     setTimeout(() => setNameOwnerTooltipOpen(false), 500)
   };
+
+  useEffect(()=>{
+    if(!isLoading && validEnsName && searchValue !== ''){
+      setSearchDisabled(false)
+    } else {
+      setSearchDisabled(true)
+    }
+  }, [isLoading, validEnsName])
 
   /* 
     Effect triggered when search is clicked.
@@ -359,7 +370,7 @@ export default function SearchEns() {
           variant="contained"
           color="primary"
           className={classes.submit}
-          disabled={isLoading}
+          disabled={searchDisabled}
         >
           Lookup NFT
       </Button>
