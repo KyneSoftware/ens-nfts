@@ -8,7 +8,7 @@ import ExploreIcon from '@material-ui/icons/Explore';
 import FileCopy from '@material-ui/icons/FileCopy';
 import namehash from 'eth-ens-namehash'
 import { useSnackbar, closeSnackbar } from 'notistack';
-import { getAddr, getResolver, checkSupportsInterface, getTokenId, getEnsOwner, getNftOwner } from '../services/ens'
+import { getAddr, getResolver, checkResolverSupportsInterface, getTokenId, getEnsOwner, getNftOwner } from '../services/ens'
 import { NftIcon } from "./NftIcon";
 
 const useStyles = makeStyles((theme) => ({
@@ -164,13 +164,13 @@ export default function SearchEns() {
           setValidEnsName(true)
 
           // Check this contract is an ERC721
-          checkSupportsInterface(addr, '0x80ac58cd').then((supported) => {
+          checkResolverSupportsInterface(addr, '0x80ac58cd').then((supported) => {
             // Make sure supported === true
             if (!!supported) {
               // We know the name resolves to an address, now get the resolver contract is uses and see if it supports EIP2381
               getResolver(searchValue).then((resolver) => {
                 // Check if this resolver uses ERC2381
-                checkSupportsInterface(resolver, '0x4b23de55').then((supportsInterface) => {
+                checkResolverSupportsInterface(resolver, '0x4b23de55').then((supportsInterface) => {
                   if (!!supportsInterface) {
                     // So far so good, this resolver contract supports the right interface, and the address is an NFT contract, check if a tokenID is set.
                     getTokenId(searchValue, resolver).then((token) => {

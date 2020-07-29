@@ -74,7 +74,7 @@ export async function getResolver(name: string): Promise<string> {
 }
 
 // Queries a resolver contract to see if it supports a specific set of functions (EIP-165 supportsInterface)
-export async function checkSupportsInterface(resolverAddress: string, interfaceId: string): Promise<boolean> {
+export async function checkResolverSupportsInterface(resolverAddress: string, interfaceId: string): Promise<boolean> {
     const { ethereum } = typeof window !== `undefined` ? window as any : null
     const provider = new ethers.providers.Web3Provider(ethereum)
     const resolver = new ethers.Contract(resolverAddress, eip2381ResolverAbi, provider);
@@ -107,9 +107,7 @@ export async function getTokenId(name: string, resolverAddress: string): Promise
         console.log(`This isn't a resolver contract that supports EIP2381, cannot query .tokenID() function.`)
         throw err
     })
-
 }
-
 
 // Queries the owner of an ENS name
 export async function getEnsOwner(name: string): Promise<string> {
@@ -125,7 +123,6 @@ export async function getEnsOwner(name: string): Promise<string> {
         throw err
     })
 }
-
 
 // Queries if the passed address is the owner of an ENS name
 export async function isEnsAdmin(name: string, address: string): Promise<boolean> {
@@ -155,5 +152,20 @@ export async function getNftOwner(contract: string, tokenId: string): Promise<st
         console.log(`Failed to query the nftContract ${contract} for the ownerOf ${tokenId}`)
         throw err
     })
+}
 
+// Queries unknown contract with a supportsInterface call
+export async function checkContractSupportsInterface(contractAddress: string, contractInterface: string): Promise<boolean> {
+    const { ethereum } = typeof window !== `undefined` ? window as any : null
+    const provider = new ethers.providers.Web3Provider(ethereum)
+    const contract = new ethers.Contract(contractAddress, erc721Abi , provider);
+
+    return await contract.supportsInterface(contractInterface).then((supported: boolean) => {
+        console.log(`Querying does ${contractAddress} support interface ${contractInterface}. ${supported.toString()}`)
+        return !!supported
+    }).catch((err: any) => {
+        console.log(`Failed to query the supportsInterface method of  ${contractAddress} for the interface ${contractInterface}`)
+        console.error(err)
+        throw err
+    })
 }

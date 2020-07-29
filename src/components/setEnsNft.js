@@ -6,7 +6,7 @@ import React, { useState, useEffect } from "react"
 import { Grid, TextField, Button, makeStyles, Avatar, Typography, Link } from "@material-ui/core"
 import FiberNewIcon from '@material-ui/icons/FiberNew';
 import namehash from 'eth-ens-namehash'
-import { getEnsOwner, nameExists, contractExists } from '../services/ens'
+import { getEnsOwner, nameExists, contractExists, checkContractSupportsInterface } from '../services/ens'
 import { ethers } from 'ethers'
 
 const useStyles = makeStyles((theme) => ({
@@ -42,8 +42,8 @@ const NAME_TEXT_UNAUTHORISED = 'Connected account does not own this name';
 const ADDRESS_TEXT_DEFAULT = 'The contract address this NFT is in';
 const ADDRESS_TEXT_INVALID = 'Contract address should start with 0x';
 const ADDRESS_TEXT_INCOMPLETE = 'Not the correct length for a contract address';
-const ADDRESS_TEXT_NONEXISTANT = 'This contract doesn\'t exist on this network';
-const ADDRESS_TEXT_NON_ERC721 = 'This contract address is not ERC721 conformant';
+const ADDRESS_TEXT_NONEXISTANT = 'Contract does not exist on this network';
+const ADDRESS_TEXT_NON_ERC721 = 'Contract is not an ERC721 type';
 const ADDRESS_TEXT_CHECKSUM_INVALID = 'The checksum for this address is incorrect';
 const ADDRESS_TEXT_UNKNOWN = 'Unknown Error Occurred';
 const ADDRESS_TEXT_ENTERED = 'The ERC721 Contract address';
@@ -213,6 +213,8 @@ export default function SetEnsToNft() {
   // When exiting the contract field, check the address exists and that the address is ERC721 conformant
   const onContractMouseOut = async (event) => {
     console.log(`MouseOut of contract address, check if it exists.`)
+    
+    // Check contract exists
     try {
       const exists = await contractExists(contractAddress)
       console.log(`Does ${contractAddress} exist? ${exists.toString()}`)
@@ -233,26 +235,24 @@ export default function SetEnsToNft() {
       setContractAddressHelperText(ADDRESS_TEXT_UNKNOWN)
     }
 
-    // try {
-    //   // Now check if the current account is an admin of the address
-    //   console.log(`Does accounts[0](${JSON.stringify(window.ethereum)}) control this name?`)
-    //   const connectedAddress = window.ethereum.selectedAddress
-    //   console.log(`Checking if ${connectedAddress} is an admin of ${ensName}`)
-    //   const ensOwner = await getEnsOwner(ensName)
+    // Check contract responds to erc165 supportsInterface(721contractInterface)
+    try {
+      // Now check if the current account is an admin of the address
+      console.log(`Checking if ${contractAddress} has erc165 support, and subsequently if it interfaces ERC721.`)
+      checkContractSupportsInterface(contractAddress, '0x80ac58cd').then((supported)=>{
+        if(!supported) {
+          if (validContractAddress) {
+            setContractAddressHelperText(ADDRESS_TEXT_NON_ERC721)
+          }
+          setValidContractAddress(false)
 
-    //   if(connectedAddress.toString().toLowerCase() === ensOwner.toString().toLowerCase()) {
-    //     console.log(`The connected account is the owner of this ENS name.`)
-    //   } else {
-    //     console.log(`Connected account is not the owner of this address`)
-    //     if(!!validEnsName) {
-    //       setNameHelperText(NAME_TEXT_UNAUTHORISED)
-    //       setValidEnsName(false)
-    //     }
-
-    //   }
-    // } catch {
-    //   console.error(`There was an issue accessing the connected ethereum account`)
-    // }
+        }
+      })
+      
+    } catch (e) {
+      console.error(`There was an issue checking if ${contractAddress.toString()} was an ERC721 contract.`)
+      console.error(e)
+    }
 
   }
 
