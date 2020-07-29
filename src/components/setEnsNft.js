@@ -37,7 +37,7 @@ const NAME_TEXT_ENTERED = 'The name to point at your NFT';
 const NAME_TEXT_INVALID = 'Invalid characters for an ENS name';
 const NAME_TEXT_INCORRECT = 'Not a recognised ENS name format';
 const NAME_TEXT_NONEXISTANT = 'This ENS name does not exist';
-const NAME_TEXT_UNAUTHORISED = 'Connected account does not administer this name';
+const NAME_TEXT_UNAUTHORISED = 'Connected account does not own this name';
 const ADDRESS_TEXT_DEFAULT = 'The contract address this NFT is in';
 const ADDRESS_TEXT_NONEXISTANT = 'This contract address doesn\'t exist on this network';
 const ADDRESS_TEXT_NON_ERC721 = 'This contract address is not ERC721 conformant';
@@ -73,6 +73,9 @@ export default function SetEnsToNft() {
   // Whether to disable input while sending transaction
   const [isLoading, setIsLoading] = useState(false)
 
+  // Whether to disable input while sending transaction
+  const [setNameButtonDisabled, setSetNameButtonDisabled] = useState(true)
+
   // Whether to run the ens searches upon a submit being clicked
   const [setNameClicked, setSetNameClicked] = useState(false)
 
@@ -86,6 +89,18 @@ export default function SetEnsToNft() {
       setSetNameClicked(false)
     }
   }, [setNameClicked])
+
+  // The effect that decides whether setName button should be enabled or disabled
+  useEffect(() =>{
+    console.log(`Checking if setName button should be enabled. isLoading: ${isLoading.toString()}, validEnsName: ${validEnsName.toString()}, validContractAddress: ${validContractAddress.toString()}, validTokenId: ${validTokenId.toString()}, web3Connected: ?`)
+    if(!isLoading && validEnsName && validContractAddress && validTokenId){
+      console.log(`Everything checks out, enabling the setName button for clicking`)
+      setSetNameButtonDisabled(false)
+    } else {
+      console.log(`Not all checks passed, disabling setName button`)
+      setSetNameButtonDisabled(true)
+    }
+  }, [isLoading, validEnsName, validContractAddress, validTokenId])
 
   // Handle name change
   const onNameChange = event => {
@@ -129,6 +144,7 @@ export default function SetEnsToNft() {
         setNameHelperText(NAME_TEXT_NONEXISTANT)
       }
       setValidEnsName(false)
+      return
     }
 
     
@@ -245,7 +261,7 @@ export default function SetEnsToNft() {
           fullWidth
           variant="contained"
           color="primary"
-          disabled={isLoading}
+          disabled={setNameButtonDisabled}
           className={classes.submit}
         >
           Set Name
