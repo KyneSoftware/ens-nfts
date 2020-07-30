@@ -8,12 +8,19 @@ import MuiDialogTitle from '@material-ui/core/DialogTitle';
 import MuiDialogContent from '@material-ui/core/DialogContent';
 import MuiDialogActions from '@material-ui/core/DialogActions';
 import IconButton from '@material-ui/core/IconButton';
-import InfoIcon from '@material-ui/icons/Info';
 import CloseIcon from '@material-ui/icons/Close';
+import DescriptionOutlinedIcon from '@material-ui/icons/DescriptionOutlined';
 import Typography from '@material-ui/core/Typography';
-import { ListItem, List, ListItemText } from '@material-ui/core';
+import { ListItem, List, ListItemText, ListItemAvatar, Avatar } from '@material-ui/core';
+import { NftIcon } from './NftIcon';
+
 
 const styles = (theme) => ({
+  avatar: {
+    backgroundColor: 'rebeccapurple',
+    width: theme.spacing(4),
+    height: theme.spacing(4),
+  },
   root: {
     margin: 0,
     padding: theme.spacing(2),
@@ -53,7 +60,8 @@ const DialogActions = withStyles((theme) => ({
   },
 }))(MuiDialogActions);
 
-export default function SetNameDialog(props) {
+const SetNameDialog = withStyles(styles)((props) => {
+  const { children, classes, ...other } = props;
   const [open, setOpen] = React.useState(props.isOpen);
 
   const handleClickOpen = () => {
@@ -70,16 +78,20 @@ export default function SetNameDialog(props) {
       </Button>
       <Dialog onClose={handleClose} aria-labelledby="customized-dialog-title" open={open}>
         <DialogTitle id="customized-dialog-title" onClose={handleClose}>
-          Set <b>{props.ensName}{" "}</b> to point at this NFT
+          Set <b>{props.ensName}{" "}</b> to point at this NFT?
         </DialogTitle>
         <DialogContent dividers>
           <List>
             <ListItem>
-              <ListItemText><b>NFT Address:</b> {props.contractAddress}{" "}</ListItemText>
+              <ListItemAvatar >
+                <Avatar className={classes.avatar}><DescriptionOutlinedIcon fontSize="small"/></Avatar>
+                </ListItemAvatar>
+              <ListItemText secondary="NFT Contract Address">{props.contractAddress}</ListItemText>
             </ListItem>
             <ListItem>
-              <ListItemText><b>Token ID:</b> {props.tokenId}{" "}
-              </ListItemText>
+              <ListItemAvatar>
+                <Avatar className={classes.avatar}><NftIcon fontSize="small"/></Avatar></ListItemAvatar>
+              <ListItemText secondary="Token ID">{props.tokenId}</ListItemText>
             </ListItem>
           </List>
           <Alert severity="info">This action will launch two Metamask transactions. One to set your name to point at an ERC2381-ready resolver contract, and another to set this resolver to resolve the name {props.ensName}{" "} to the above details. <b>This will overwrite anything currently addressed by this name.</b></Alert>
@@ -92,4 +104,5 @@ export default function SetNameDialog(props) {
       </Dialog>
     </div>
   );
-}
+});
+export default SetNameDialog;
