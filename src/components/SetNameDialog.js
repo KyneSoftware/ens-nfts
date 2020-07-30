@@ -1,5 +1,5 @@
 // This is the Dialog Modal that pops up asking a user to confirm the name setting they are about to do with Metamask
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { withStyles } from '@material-ui/core/styles';
 import Alert from '@material-ui/lab/Alert';
 import Button from '@material-ui/core/Button';
@@ -13,6 +13,7 @@ import DescriptionOutlinedIcon from '@material-ui/icons/DescriptionOutlined';
 import Typography from '@material-ui/core/Typography';
 import { ListItem, List, ListItemText, ListItemAvatar, Avatar } from '@material-ui/core';
 import { NftIcon } from './NftIcon';
+import { useSnackbar } from 'notistack';
 
 
 const styles = (theme) => ({
@@ -61,23 +62,34 @@ const DialogActions = withStyles((theme) => ({
 }))(MuiDialogActions);
 
 const SetNameDialog = withStyles(styles)((props) => {
-  const { children, classes, ...other } = props;
-  const [open, setOpen] = React.useState(props.isOpen);
+  const { children, classes, open, onClose, ...other } = props;
 
-  const handleClickOpen = () => {
-    setOpen(true);
+  const [confirmClicked, setConfirmClicked] = useState(false);
+  const { enqueueSnackbar, closeSnackbar } = useSnackbar();
+
+
+  const handleConfirm = () => {
+    setConfirmClicked(true);
   };
-  const handleClose = () => {
-    setOpen(false);
-  };
+
+  useEffect(()=>{
+    if(confirmClicked){
+      console.log(`Confirm Clicked, time to trigger transactions.`)
+      enqueueSnackbar(`Setting resolver for ${props.ensName}`, {
+        variant: 'default',
+      })
+
+    }
+    
+    return ()=>{
+      setConfirmClicked(false)
+    }
+  }, [confirmClicked])
 
   return (
     <div>
-      <Button variant="outlined" color="primary" onClick={handleClickOpen}>
-        Open dialog
-      </Button>
-      <Dialog onClose={handleClose} aria-labelledby="customized-dialog-title" open={open}>
-        <DialogTitle id="customized-dialog-title" onClose={handleClose}>
+      <Dialog onClose={onClose} aria-labelledby="customized-dialog-title" open={open}>
+        <DialogTitle id="customized-dialog-title" onClose={onClose}>
           Set <b>{props.ensName}{" "}</b> to point at this NFT?
         </DialogTitle>
         <DialogContent dividers>
@@ -97,7 +109,7 @@ const SetNameDialog = withStyles(styles)((props) => {
           <Alert severity="info">This action will launch two Metamask transactions. One to set your name to point at an ERC2381-ready resolver contract, and another to set this resolver to resolve the name {props.ensName}{" "} to the above details. <b>This will overwrite anything currently addressed by this name.</b></Alert>
         </DialogContent>
         <DialogActions>
-          <Button autoFocus onClick={handleClose} color="primary">
+          <Button onClick={handleConfirm} color="primary">
             Confirm
           </Button>
         </DialogActions>

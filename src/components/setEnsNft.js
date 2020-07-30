@@ -92,11 +92,17 @@ export default function SetEnsToNft() {
   // The effect that runs when submit is clicked
   useEffect(() => {
     console.log(`Set Name clicked, checking the validity of these fields before launching confirmation modal.`)
-    setShowDialog(true)
+    if(validEnsName && validContractAddress && validTokenId && ensName !== '' && contractAddress !== '' && tokenId !== '' && setNameClicked){
+      setShowDialog(true)
+    }
     return () => {
       setSetNameClicked(false)
     }
   }, [setNameClicked])
+
+  const onModalClose = () => {
+    setShowDialog(false)
+  }
 
   // The effect that decides whether setName button should be enabled or disabled
   useEffect(() => {
@@ -390,7 +396,7 @@ export default function SetEnsToNft() {
         >
           Set Name
           </Button>
-          <SetNameDialog open={showDialog} contractAddress={contractAddress} tokenId={tokenId} ensName={ensName}/>
+          <SetNameDialog open={showDialog} onClose={onModalClose} contractAddress={contractAddress} tokenId={tokenId} ensName={ensName}/>
         <Grid container justify="flex-end">
           <Grid item>
             <Link href="https://github.com/OisinKyne/ens_nfts/issues/" variant="body2" className={classes.link} target="_blank" rel="noreferrer">
