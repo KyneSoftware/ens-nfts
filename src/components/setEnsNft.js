@@ -8,6 +8,7 @@ import FiberNewIcon from '@material-ui/icons/FiberNew';
 import namehash from 'eth-ens-namehash'
 import { getEnsOwner, nameExists, contractExists, checkContractSupportsInterface, tokenExists } from '../services/ens'
 import { ethers } from 'ethers'
+import SetNameDialog from "./SetNameDialog";
 
 const useStyles = makeStyles((theme) => ({
   paper: {
@@ -85,12 +86,13 @@ export default function SetEnsToNft() {
   // Whether to run the ens searches upon a submit being clicked
   const [setNameClicked, setSetNameClicked] = useState(false)
 
-  // Whether the Tx confirmation modal is visible
-  const [showModal, setShowModal] = useState(false)
+  // Whether the Tx confirmation dialog is visible
+  const [showDialog, setShowDialog] = useState(false)
 
   // The effect that runs when submit is clicked
   useEffect(() => {
     console.log(`Set Name clicked, checking the validity of these fields before launching confirmation modal.`)
+    setShowDialog(true)
     return () => {
       setSetNameClicked(false)
     }
@@ -312,9 +314,9 @@ export default function SetEnsToNft() {
     setSetNameClicked(true)
 
     setTimeout(() => {
-      setValidEnsName(false)
-      setValidTokenId(false)
-      setValidContractAddress(false)
+      // setValidEnsName(false)
+      // setValidTokenId(false)
+      // setValidContractAddress(false)
       setIsLoading(false)
     }, 1000)
 
@@ -388,6 +390,7 @@ export default function SetEnsToNft() {
         >
           Set Name
           </Button>
+          <SetNameDialog open={showDialog} contractAddress={contractAddress} tokenId={tokenId} ensName={ensName}/>
         <Grid container justify="flex-end">
           <Grid item>
             <Link href="https://github.com/OisinKyne/ens_nfts/issues/" variant="body2" className={classes.link} target="_blank" rel="noreferrer">
