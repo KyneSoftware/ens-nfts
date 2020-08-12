@@ -18,7 +18,7 @@ import { useSnackbar } from 'notistack';
 
 const styles = (theme) => ({
   avatar: {
-    backgroundColor: 'rebeccapurple',
+    backgroundColor: 'midnightblue',
     width: theme.spacing(4),
     height: theme.spacing(4),
   },
