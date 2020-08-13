@@ -350,7 +350,7 @@ export default function SearchEns() {
       <Typography component="h1" variant="h5">
         Search for a named NFT
       </Typography>
-      <form className={classes.form} noValidate onSubmit={onSubmit}>
+      <form className={classes.form} noValidate spellCheck={false} onSubmit={onSubmit}>
         <TextField
           onChange={onChange}
           helperText={helperText}
@@ -361,6 +361,7 @@ export default function SearchEns() {
           required
           fullWidth
           id="ensName"
+          type="url"
           value={searchValue}
           label="ENS Name"
           autoCapitalize="off" 
