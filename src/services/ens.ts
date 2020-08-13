@@ -43,7 +43,7 @@ export async function contractExists(address: string): Promise<boolean> {
 export async function tokenExists(address: string, token: string): Promise<boolean> {
     const { ethereum } = typeof window !== `undefined` ? window as any : null
     const provider = new ethers.providers.Web3Provider(ethereum)
-    const contract = new ethers.Contract(address, erc721Abi , provider);
+    const contract = new ethers.Contract(address, erc721Abi, provider);
 
     return contract.ownerOf(token).then((owner: any) => {
         console.log(`ens.ts(tokenExists): ${token} in ${address} exists on this network. ${!!owner.toString()}. Token Owner: ${owner.toString()}`)
@@ -94,9 +94,14 @@ export async function checkResolverSupportsInterface(resolverAddress: string, in
     const { ethereum } = typeof window !== `undefined` ? window as any : null
     const provider = new ethers.providers.Web3Provider(ethereum)
     const resolver = new ethers.Contract(resolverAddress, eip2381ResolverAbi, provider);
-    const supports2381 = await resolver.supportsInterface(interfaceId)
-    console.log(`supportsInterface for contract: ${resolverAddress} with interface: ${interfaceId} resulted in: ${supports2381}`)
-    return !!supports2381
+    return await resolver.supportsInterface(interfaceId).then((supports: boolean) => {
+        console.log(`supportsInterface for contract: ${resolverAddress} with interface: ${interfaceId} resulted in: ${supports}`)
+        return !!supports
+    }).catch((err: any) => {
+        console.log(`Failed to query the supportsInterface method of  ${resolverAddress} for the interface ${interfaceId}`)
+        console.error(err)
+        return false
+    })
 }
 
 // Queries a resolver contract for an Ethereum address
@@ -174,7 +179,7 @@ export async function getNftOwner(contract: string, tokenId: string): Promise<st
 export async function checkContractSupportsInterface(contractAddress: string, contractInterface: string): Promise<boolean> {
     const { ethereum } = typeof window !== `undefined` ? window as any : null
     const provider = new ethers.providers.Web3Provider(ethereum)
-    const contract = new ethers.Contract(contractAddress, erc721Abi , provider);
+    const contract = new ethers.Contract(contractAddress, erc721Abi, provider);
 
     return await contract.supportsInterface(contractInterface).then((supported: boolean) => {
         console.log(`Querying does ${contractAddress} support interface ${contractInterface}. ${supported.toString()}`)

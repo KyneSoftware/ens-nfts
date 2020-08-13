@@ -125,7 +125,7 @@ export default function SetEnsToNft() {
     var normalized;
     try {
       normalized = namehash.normalize(name)
-      console.log('Setting an NFT resolver for: ' + namehash.hash(normalized))
+      // console.log('Setting an NFT resolver for: ' + namehash.hash(normalized))
     } catch {
       setValidEnsName(false)
       setNameHelperText(NAME_TEXT_INVALID)
@@ -136,7 +136,7 @@ export default function SetEnsToNft() {
     const tail = normalized.substr(normalized.length - 4)
     // console.log(`Normalised version of input: ${name} is ${normalized}. The last 4 chars are: ${tail}`)
 
-    if (name === normalized && tail === '.eth') {
+    if (name.toLowerCase() === normalized && tail === '.eth') {
       setValidEnsName(true)
       setNameHelperText(NAME_TEXT_ENTERED)
     } else {
@@ -353,6 +353,7 @@ export default function SetEnsToNft() {
               fullWidth
               id="ensName"
               label="ENS Name"
+              type="url"
               autoCapitalize="off" 
               autoComplete="off"
               spellCheck="false" 
@@ -372,6 +373,7 @@ export default function SetEnsToNft() {
               id="contractAddress"
               label="NFT Contract Address"
               name="contractAddress"
+              type="url"
               autoCapitalize="off" 
               autoComplete="off"
               spellCheck="false" 
@@ -391,6 +393,7 @@ export default function SetEnsToNft() {
               id="tokenId"
               label="Token ID"
               name="tokenId"
+              type="url"
               autoCapitalize="off" 
               autoComplete="off"
               spellCheck="false" 
