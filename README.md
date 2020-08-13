@@ -60,5 +60,6 @@ If you support ENS names in your application, and you want to add in NFT support
 - [x] Make a robust readme describing EIP2381
 - [ ] Get gap beneath search box closed when a search hasn't been completed.
 - [x] Get the search name field to not autocorrect with spacing and capitalisation on mobile
-- [ ] Don't error if there is uppercase letters in an ENS name, they are taken care of in normalisation
+- [x] Don't error if there is uppercase letters in an ENS name, they are taken care of in normalisation
 - [x] Centre title
+- [ ] Setup debug, info and error logging
