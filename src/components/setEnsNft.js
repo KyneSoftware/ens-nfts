@@ -353,6 +353,10 @@ export default function SetEnsToNft() {
               fullWidth
               id="ensName"
               label="ENS Name"
+              autoCapitalize="off" 
+              autoComplete="off"
+              spellCheck="false" 
+              autoCorrect="off"
             />
           </Grid>
           <Grid item xs={12}>
@@ -368,6 +372,10 @@ export default function SetEnsToNft() {
               id="contractAddress"
               label="NFT Contract Address"
               name="contractAddress"
+              autoCapitalize="off" 
+              autoComplete="off"
+              spellCheck="false" 
+              autoCorrect="off"
             />
           </Grid>
           <Grid item xs={12}>
@@ -383,6 +391,10 @@ export default function SetEnsToNft() {
               id="tokenId"
               label="Token ID"
               name="tokenId"
+              autoCapitalize="off" 
+              autoComplete="off"
+              spellCheck="false" 
+              autoCorrect="off"
             />
           </Grid>
         </Grid>

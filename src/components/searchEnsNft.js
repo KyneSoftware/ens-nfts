@@ -3,7 +3,7 @@
  */
 
 import React, { useState, useEffect } from "react"
-import { Grid, TextField, Button, makeStyles, Avatar, Typography, CircularProgress, Link, Tooltip, IconButton, List, ListItem, ListItemText, Divider, Paper, Card, Grow } from "@material-ui/core"
+import { TextField, Button, makeStyles, Avatar, Typography,  Link, Tooltip, IconButton, List, ListItem, ListItemText, Divider, Card, Grow } from "@material-ui/core"
 import ExploreIcon from '@material-ui/icons/Explore';
 import FileCopy from '@material-ui/icons/FileCopy';
 import namehash from 'eth-ens-namehash'
@@ -325,7 +325,7 @@ export default function SearchEns() {
     const tail = normalized.substr(normalized.length - 4)
     // console.log(`Normalised version of input: ${search} is ${normalized}. The last 4 chars are: ${tail}`)
 
-    if (search === normalized && tail === '.eth') {
+    if (search.toLowerCase() === normalized && tail === '.eth') {
       setValidEnsName(true)
       setHelperText(SEARCH_FOR_NFT_TEXT)
     } else {
@@ -363,6 +363,10 @@ export default function SearchEns() {
           id="ensName"
           value={searchValue}
           label="ENS Name"
+          autoCapitalize="off" 
+          autoComplete="off"
+          spellCheck="false" 
+          autoCorrect="off"
         />
         <Button
           type="submit"
