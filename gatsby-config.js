@@ -22,10 +22,10 @@ module.exports = {
         name: `gatsby-starter-default`,
         short_name: `Name your NFts`,
         start_url: `/`,
-        background_color: `#663399`,
-        theme_color: `#663399`,
+        background_color: `#2E4057`,
+        theme_color: `#F6C26C`,
         display: `minimal-ui`,
-        icon: `src/images/kyne-icon.png`, // This path is relative to the root of the site.
+        icon: `src/images/IconLargeBlack.png`, // This path is relative to the root of the site.
       },
     },
     `gatsby-theme-material-ui`,

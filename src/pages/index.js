@@ -10,7 +10,7 @@ import SEO from "../components/seo"
 import MetamaskOnboarding from "../components/metamaskOnboarding";
 import SearchEns from "../components/searchEnsNft"
 import SetEnsToNft from "../components/setEnsNft";
-import { Typography, Link } from "@material-ui/core";
+import { Typography, Link, ThemeProvider, createMuiTheme } from "@material-ui/core";
 
 
 // For setting up Web3 react provider
@@ -18,10 +18,23 @@ function getWeb3Library(provider) {
   return new Web3Provider(provider)
 }
 
+// Website theme
+const theme = createMuiTheme({
+  palette: {
+    primary: {
+      main: `#2F2D2E`,
+    },
+    secondary: {
+      main: `#F6C26C`,
+    },
+  },
+});
+
 export default function IndexPage() {
   return (
     <Web3ReactProvider getLibrary={getWeb3Library}>
       <SnackbarProvider maxSnack={3}>
+      <ThemeProvider theme={theme}>
         <Layout>
           <SEO title="Home" />
           <Container component="main" maxWidth="xs">
@@ -43,6 +56,7 @@ export default function IndexPage() {
             <SetEnsToNft />
           </Container>
         </Layout>
+        </ThemeProvider>
       </SnackbarProvider>
     </Web3ReactProvider>
   )

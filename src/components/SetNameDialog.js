@@ -19,7 +19,7 @@ import { getResolver, checkResolverSupportsInterface } from '../services/ens';
 
 const styles = (theme) => ({
   avatar: {
-    backgroundColor: 'midnightblue',
+    backgroundColor: '#2E4057',
     width: theme.spacing(4),
     height: theme.spacing(4),
   },
