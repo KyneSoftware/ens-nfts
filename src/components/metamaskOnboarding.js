@@ -27,37 +27,28 @@ const useStyles = makeStyles((theme) => ({
 export default function MetamaskOnboarding() {
   const [buttonText, setButtonText] = React.useState(ONBOARD_TEXT);
   const [isDisabled, setDisabled] = React.useState(false);
+  // Triggered when the connect button is clicked, used to trigger the connect account react effect
+  const [connectClicked, setConnectClicked] = React.useState(false);
   const [accounts, setAccounts] = React.useState([]);
   const onboarding = React.useRef();
 
-  // Instantiate onboarding object
+  // Instantiate metamask onboarding object once connect clicked
   React.useEffect(() => {
-    if (!onboarding.current) {
-      onboarding.current = new MetaMaskOnboarding();
+    // Effects trigger when a variable changes, so connectClicked = true runs this once, 
+    // and then when we toggle the value back off we don't want to run this logic a second time, so short circuit return early
+    if (!connectClicked) {
+      return
     }
-  }, []);
 
-  // Is metamask installed
-  React.useEffect(() => {
+    // Check if we have a reference to MetaMaskOnboarding or instantiate a new one
+
     if (MetaMaskOnboarding.isMetaMaskInstalled()) {
-      if (accounts.length > 0) {
-        setButtonText(CONNECTED_TEXT);
-        setDisabled(true);
-        onboarding.current.stopOnboarding();
-      } else {
-        setButtonText(CONNECT_TEXT);
-        setDisabled(false);
+
+      // Callback that saves the permitted Eth accounts to react state
+      function handleNewAccounts(newAccounts) {
+        setAccounts(newAccounts);
       }
-    }
-  }, [accounts]);
-
-  // If metamask is installed, request access to the accounts in it
-  // If metamask is disconnected, drop the accounts
-  React.useEffect(() => {
-    function handleNewAccounts(newAccounts) {
-      setAccounts(newAccounts);
-    }
-    if (MetaMaskOnboarding.isMetaMaskInstalled()) {
+      console.log('Metamask already installed, requesting access')
       const { ethereum } = typeof window !== `undefined` ? window : null
       ethereum
         .request({ method: 'eth_requestAccounts' })
@@ -66,19 +57,62 @@ export default function MetamaskOnboarding() {
       return () => {
         ethereum.off('accountsChanged', handleNewAccounts);
       };
+
     }
-  }, []);
+
+    else if (!onboarding.current) {
+      onboarding.current = new MetaMaskOnboarding();
+      console.log('Metamask not installed, trigger onboarding flow. ')
+      onboarding.current.startOnboarding();
+    }
+
+    console.log('Finishing metamask connect button click')
+    setConnectClicked(false)
+
+    // React effect runs each time connectClicked's value changes
+  }, [connectClicked]);
+
+  // Is metamask installed
+  React.useEffect(() => {
+    if (MetaMaskOnboarding.isMetaMaskInstalled()) {
+      if (accounts.length > 0) {
+        // Looks good, grey out button and say "Connected"
+        setButtonText(CONNECTED_TEXT);
+        setDisabled(true);
+        // Stop onboarding prompt if it's started
+        if (!!onboarding.current) {
+          onboarding.current.stopOnboarding();
+        }
+      } else {
+        setButtonText(CONNECT_TEXT);
+        setDisabled(false);
+      }
+    } else {
+      console.log('Metamask is not installed allegedly. ')
+    }
+  }, [accounts]);
+
+  // If metamask is installed, request access to the accounts in it
+  // If metamask is disconnected, drop the accounts
+  // React.useEffect(() => {
+  //     function handleNewAccounts(newAccounts) {
+  //         setAccounts(newAccounts);
+  //     }
+  //     if (MetaMaskOnboarding.isMetaMaskInstalled()) {
+  //         const { ethereum } = typeof window !== `undefined` ? window : null
+  //         ethereum
+  //             .request({ method: 'eth_requestAccounts' })
+  //             .then(handleNewAccounts);
+  //         ethereum.on('accountsChanged', handleNewAccounts);
+  //         return () => {
+  //             ethereum.off('accountsChanged', handleNewAccounts);
+  //         };
+  //     }
+  // }, []);
 
   // If the Connect to metamask button is clicked, begin to connect to accounts. 
   const onClick = () => {
-    if (MetaMaskOnboarding.isMetaMaskInstalled()) {
-      const { ethereum } = typeof window !== `undefined` ? window : null
-      ethereum
-        .request({ method: 'eth_requestAccounts' })
-        .then((newAccounts) => setAccounts(newAccounts));
-    } else {
-      onboarding.current.startOnboarding();
-    }
+    setConnectClicked(true)
   };
   const classes = useStyles();
   return (
