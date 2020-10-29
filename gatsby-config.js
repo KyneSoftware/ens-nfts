@@ -1,10 +1,10 @@
 module.exports = {
   siteMetadata: {
     title: `Name your NFTs with ENS`,
-    description: `What better way to make it apparent your non fungible is one of a kind than by pointing an ENS name at it.`,
+    description: `What better way to make it apparent your non fungible is one of a kind than by pointing an ENS name at it?`,
     author: `@oisinkyne`,
   },
-  pathPrefix: '/ens_nfts',
+  pathPrefix: '/',
   plugins: [
     `gatsby-plugin-react-helmet`,
     {
@@ -19,7 +19,7 @@ module.exports = {
     {
       resolve: `gatsby-plugin-manifest`,
       options: {
-        name: `gatsby-starter-default`,
+        name: `ens-nfts`,
         short_name: `Name your NFts`,
         start_url: `/`,
         background_color: `#2E4057`,
