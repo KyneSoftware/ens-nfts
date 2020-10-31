@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { withStyles } from '@material-ui/core/styles';
 import Alert from '@material-ui/lab/Alert';
 import Button from '@material-ui/core/Button';
+import clsx from 'clsx';
 import Dialog from '@material-ui/core/Dialog';
 import MuiDialogTitle from '@material-ui/core/DialogTitle';
 import MuiDialogContent from '@material-ui/core/DialogContent';
@@ -11,10 +12,11 @@ import IconButton from '@material-ui/core/IconButton';
 import CloseIcon from '@material-ui/icons/Close';
 import DescriptionOutlinedIcon from '@material-ui/icons/DescriptionOutlined';
 import Typography from '@material-ui/core/Typography';
-import { ListItem, List, ListItemText, ListItemAvatar, Avatar } from '@material-ui/core';
+import { ListItem, List, ListItemText, ListItemAvatar, Avatar, CircularProgress } from '@material-ui/core';
 import { NftIcon } from './NftIcon';
 import { useSnackbar } from 'notistack';
 import { getResolver, checkResolverSupportsInterface, setResolver } from '../services/ens';
+import { green } from '@material-ui/core/colors';
 
 
 const styles = (theme) => ({
@@ -32,6 +34,24 @@ const styles = (theme) => ({
     right: theme.spacing(1),
     top: theme.spacing(1),
     color: theme.palette.grey[500],
+  },
+  wrapper: {
+    margin: theme.spacing(1),
+    position: 'relative',
+  },
+  buttonSuccess: {
+    backgroundColor: green[500],
+    '&:hover': {
+      backgroundColor: green[700],
+    },
+  },
+  buttonProgress: {
+    color: green[500],
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    marginTop: -12,
+    marginLeft: -12,
   },
 });
 
@@ -62,14 +82,23 @@ const DialogActions = withStyles((theme) => ({
   },
 }))(MuiDialogActions);
 
+
+
 const SetNameDialog = withStyles(styles)((props) => {
   const { children, classes, open, onClose, ...other } = props;
-
   const [confirmClicked, setConfirmClicked] = useState(false);
+  // React state that will hold the progress of the set resolver tx.
+  const [resolverTxInProgress, setResolverTxInProgress] = useState(false);
+  // The state that tracks the success of the resolver tx.
+  const [resolverTxSucceeded, setResolverTxSucceeded] = useState(false);
+  // The state that tracks if the resolver tx failed
+  const [resolverTxFailed, setResolverTxFailed] = useState(false);
   // If this name already has a resolver contract set, and this resolver contract supports EIP2381, we can skip the first
   // transaction that calls the ENS registry to update the linked resolver contract.
   const [resolverSupportsEip2381, setResolverSupportsEip2381] = useState(true);
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
+  const timer = React.useRef();
+
 
   // Check if we are doing 1 or 2 transactions in this modal depening on if the name points at a resolver
   // and whether that resolver supports EIP2381. 
@@ -91,7 +120,7 @@ const SetNameDialog = withStyles(styles)((props) => {
       console.error(`There was trouble checking if ${props.ensName} has an EIP2381 resolver set.`)
       console.error(e)
     }
-    return () => {}
+    return () => { }
   }, [props.open])
 
   // Effect that launches the metamask tranasctions. 
@@ -101,13 +130,12 @@ const SetNameDialog = withStyles(styles)((props) => {
       enqueueSnackbar(`Setting resolver for ${props.ensName}`, {
         variant: 'default',
       })
-      setResolver(props.ensName).then((response)=>{
+      setResolver(props.ensName).then((response) => {
         console.log('Setting the resolver has returned, next we will set the address and tokenId fields on the new resolver.')
         enqueueSnackbar(`Setting ${props.ensName} to contract address`, {
           variant: 'default',
         })
-      }).catch((err) =>
-      {
+      }).catch((err) => {
         console.error('There was an issue setting the resolver contract for this name')
         console.log(err)
         enqueueSnackbar(`Failed to set resolver for ${props.ensName}`, {
@@ -126,6 +154,27 @@ const SetNameDialog = withStyles(styles)((props) => {
   const handleConfirm = () => {
     setConfirmClicked(true);
   };
+
+  const handleSetResolverClick = () => {
+    if (!resolverTxInProgress) {
+      setResolverTxSucceeded(false);
+      setResolverTxInProgress(true);
+      timer.current = window.setTimeout(() => {
+        setResolverTxSucceeded(true);
+        setResolverTxInProgress(false);
+      }, 2000);
+    }
+  };
+  
+  const buttonClassname = clsx({
+    [classes.buttonSuccess]: setResolverTxSucceeded,
+  });
+  
+  React.useEffect(() => {
+    return () => {
+      clearTimeout(timer.current);
+    };
+  }, []);
 
   return (
     <div>
@@ -149,7 +198,18 @@ const SetNameDialog = withStyles(styles)((props) => {
           </List>
           {!resolverSupportsEip2381 && <Alert severity="info">This action will launch two Metamask transactions. One to set your name to point at an ERC2381-ready resolver contract, and another to set this resolver to resolve the name <b>{props.ensName}</b>{" "} to the above details. <b>This will overwrite anything currently addressed by this name.</b></Alert>}
           {resolverSupportsEip2381 && <Alert severity="info">This action will launch a Metamask transaction to set this resolver to resolve the name <b>{props.ensName}</b>{" "} to the above details. <b>This will overwrite anything currently addressed by this name.</b></Alert>}
-
+          <div className={classes.wrapper}>
+            <Button
+              variant="contained"
+              color="primary"
+              className={buttonClassname}
+              disabled={resolverTxInProgress}
+              onClick={handleSetResolverClick}
+            >
+              Set Resolver
+            </Button>
+            {resolverTxInProgress && <CircularProgress size={24} className={classes.buttonProgress} />}
+          </div>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleConfirm} color="primary">
