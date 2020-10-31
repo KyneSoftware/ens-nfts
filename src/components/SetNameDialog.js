@@ -16,8 +16,12 @@ import { ListItem, List, ListItemText, ListItemAvatar, Avatar, CircularProgress 
 import { NftIcon } from './NftIcon';
 import { useSnackbar } from 'notistack';
 import { getResolver, checkResolverSupportsInterface, setResolver } from '../services/ens';
-import { green } from '@material-ui/core/colors';
+import { grey, green, red } from '@material-ui/core/colors';
 
+const SET_RESOLVER_TEXT_DEFAULT = "Set Resolver"
+const SET_RESOLVER_TEXT_IN_PROGRESS = "Setting Resolver"
+const SET_RESOLVER_TEXT_SUCCESS = "Resolver Set"
+const SET_RESOLVER_TEXT_FAILED = "Transaction Failed"
 
 const styles = (theme) => ({
   avatar: {
@@ -39,14 +43,25 @@ const styles = (theme) => ({
     margin: theme.spacing(1),
     position: 'relative',
   },
+  button: {
+    // margin: theme.spacing(8, 0, 2),
+    width: "100%",
+    backgroundColor: '#2E4057',
+  },
   buttonSuccess: {
     backgroundColor: green[500],
     '&:hover': {
       backgroundColor: green[700],
     },
   },
+  buttonFailed: {
+    backgroundColor: red[500],
+    '&:hover': {
+      backgroundColor: red[700],
+    },
+  },
   buttonProgress: {
-    color: green[500],
+    color: grey[500],
     position: 'absolute',
     top: '50%',
     left: '50%',
@@ -87,6 +102,8 @@ const DialogActions = withStyles((theme) => ({
 const SetNameDialog = withStyles(styles)((props) => {
   const { children, classes, open, onClose, ...other } = props;
   const [confirmClicked, setConfirmClicked] = useState(false);
+  //
+  const [resolverTxButtonText, setResolverTxButtonText] = useState(SET_RESOLVER_TEXT_DEFAULT)
   // React state that will hold the progress of the set resolver tx.
   const [resolverTxInProgress, setResolverTxInProgress] = useState(false);
   // The state that tracks the success of the resolver tx.
@@ -159,15 +176,22 @@ const SetNameDialog = withStyles(styles)((props) => {
     if (!resolverTxInProgress) {
       setResolverTxSucceeded(false);
       setResolverTxInProgress(true);
+      setResolverTxButtonText(SET_RESOLVER_TEXT_IN_PROGRESS)
       timer.current = window.setTimeout(() => {
-        setResolverTxSucceeded(true);
+        // setResolverTxSucceeded(true);
+        // setResolverTxInProgress(false);
+        // setResolverTxButtonText(SET_RESOLVER_TEXT_SUCCESS)
+        setResolverTxFailed(true);
         setResolverTxInProgress(false);
+        setResolverTxButtonText(SET_RESOLVER_TEXT_FAILED)
       }, 2000);
     }
   };
   
   const buttonClassname = clsx({
-    [classes.buttonSuccess]: setResolverTxSucceeded,
+    [classes.button]: true,
+    [classes.buttonSuccess]: resolverTxSucceeded,
+    [classes.buttonFailed]: resolverTxFailed
   });
   
   React.useEffect(() => {
@@ -206,7 +230,7 @@ const SetNameDialog = withStyles(styles)((props) => {
               disabled={resolverTxInProgress}
               onClick={handleSetResolverClick}
             >
-              Set Resolver
+              {resolverTxButtonText}
             </Button>
             {resolverTxInProgress && <CircularProgress size={24} className={classes.buttonProgress} />}
           </div>
