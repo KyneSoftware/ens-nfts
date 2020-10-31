@@ -7,7 +7,14 @@ import eip2381ResolverAbi from '../abis/eip2381-resolver.json'
 import erc721Abi from '../abis/erc721-abi.json'
 
 const ENS_REGISTRY_ADDRESS = '0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e'
-
+const ENS_NFT_RESOLVERS = [
+    'No-NetworkID-0',
+    '0xb2eef9d0235a339179a7e177e818439dcca9d76e',
+    'No-NetworkId-2',
+    '0xf39f73b0c748d284dcea3f0da8bbdefa7a789c6b',
+    '0x9d5dd30b5d77665f0c2f082cccc077d349ba1afc',
+    '0x2618f1ed8590cb750489ce5de0d1c05d8375bbdf',
+]
 // Queries the `recordExists` function in the registry contract
 export async function nameExists(name: string): Promise<boolean> {
     const { ethereum } = typeof window !== `undefined` ? window as any : null
@@ -86,6 +93,29 @@ export async function getResolver(name: string): Promise<string> {
     return await ens.resolver(hash).then((addr: any) => {
         console.log(`The address of the resolver contract for this name is: ${addr.toString()}`)
         return addr
+    })
+}
+
+// Sets a resolver contract to the const resolver address in this file
+export async function setResolver(name: string): Promise<string> {
+    const { ethereum } = typeof window !== `undefined` ? window as any : null
+    const provider = new ethers.providers.Web3Provider(ethereum)
+    const signer = provider.getSigner()
+    const ens = new ethers.Contract(ENS_REGISTRY_ADDRESS, ensAbi, signer);
+    const hash = namehash.hash(name)
+    const chainId = (await provider.getNetwork()).chainId
+
+    if(!(chainId === 1 || chainId === 3 || chainId === 4 || chainId === 5)){
+        throw new Error('Unknown chain Id, no resolver contract on this network.')
+    }
+    const resolverContract = ENS_NFT_RESOLVERS[chainId]
+
+    console.log(`ens.ts: Set new resolver for: ${name}? (Namehash: ${hash}) on chain: ${chainId} to resolverContract: ${resolverContract} with signer: ${JSON.stringify(signer)}`)
+
+    // Call the setResolver method of the ENS registry, which has prototype: setResolver(bytes32 node, address resolver)
+    return await ens.setResolver(hash, resolverContract).then((response: any) => {
+        console.log(`The address of the resolver contract for this name is: ${response.toString()}`)
+        return response
     })
 }
 

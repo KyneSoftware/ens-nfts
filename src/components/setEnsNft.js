@@ -102,6 +102,7 @@ export default function SetEnsToNft() {
 
   const onModalClose = () => {
     setShowDialog(false)
+    setIsLoading(false)
   }
 
   // The effect that decides whether setName button should be enabled or disabled
@@ -212,7 +213,7 @@ export default function SetEnsToNft() {
     // Check if the address checksum is valid
     try {
       ethers.utils.getAddress(contract)
-      console.log(`No issues found with address: ${contract}`)
+      console.debug(`No issues found with address: ${contract}`)
     } catch (e) {
       console.log(`There was an error with this contract address`)
       console.error(e)
@@ -227,7 +228,7 @@ export default function SetEnsToNft() {
 
   // When exiting the contract field, check the address exists and that the address is ERC721 conformant
   const onContractMouseOut = async (event) => {
-    console.log(`MouseOut of contract address, check if it exists.`)
+    console.debug(`MouseOut of contract address, check if it exists.`)
     
     // Check contract exists
     try {
@@ -253,7 +254,7 @@ export default function SetEnsToNft() {
     // Check contract responds to erc165 supportsInterface(721contractInterface)
     try {
       // Now check if the current account is an admin of the address
-      console.log(`Checking if ${contractAddress} has erc165 support, and subsequently if it interfaces ERC721.`)
+      console.debug(`Checking if ${contractAddress} has erc165 support, and subsequently if it interfaces ERC721.`)
       checkContractSupportsInterface(contractAddress, '0x80ac58cd').then((supported)=>{
         if(!supported) {
           if (validContractAddress) {
@@ -274,7 +275,7 @@ export default function SetEnsToNft() {
   // Checks the token input is a numerical string
   const onTokenChange = async (event) => {
     const token = event.target.value
-    console.log('Token ID : ' + token)
+    console.debug('Token ID : ' + token)
     setTokenId(token)
 
     // Check token contains only digits
@@ -291,7 +292,7 @@ export default function SetEnsToNft() {
   // When exiting the TokenId field, check the token exists within the contract address 
   const onTokenMouseOut = async (event) => {
     const token = event.target.value
-    console.log(`MouseOut of tokenID, check if ${token} exists in contract ${contractAddress}.`)
+    console.debug(`MouseOut of tokenID, check if ${token} exists in contract ${contractAddress}.`)
 
     tokenExists(contractAddress, tokenId).then((exists)=>{
       console.log(`Token ${tokenId} exists in contract ${contractAddress}. ${!!exists.toString()}`)
@@ -319,12 +320,12 @@ export default function SetEnsToNft() {
     setIsLoading(true)
     setSetNameClicked(true)
 
-    setTimeout(() => {
-      // setValidEnsName(false)
-      // setValidTokenId(false)
-      // setValidContractAddress(false)
-      setIsLoading(false)
-    }, 1000)
+    // setTimeout(() => {
+    //   // setValidEnsName(false)
+    //   // setValidTokenId(false)
+    //   // setValidContractAddress(false)
+    //   setIsLoading(false)
+    // }, 1000)
 
   }
 
