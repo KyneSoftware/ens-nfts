@@ -11,6 +11,7 @@ import MetamaskOnboarding from "../components/metamaskOnboarding";
 import SearchEns from "../components/searchEnsNft"
 import SetEnsToNft from "../components/setEnsNft";
 import { Typography, Link, ThemeProvider, createMuiTheme } from "@material-ui/core";
+import { green, red, yellow } from "@material-ui/core/colors";
 
 
 // For setting up Web3 react provider
@@ -29,6 +30,15 @@ const theme = createMuiTheme({
     },
     info: {
       main: `#449DD1`
+    },
+    success: {
+      main: green[500]
+    },
+    error: {
+      main: red[500]
+    },
+    warning: {
+      main: yellow[500]
     }
   },
 });

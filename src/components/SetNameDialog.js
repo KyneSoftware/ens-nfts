@@ -43,6 +43,7 @@ const styles = (theme) => ({
     margin: theme.spacing(1),
     position: 'relative',
   },
+  // Button styles are for transaction sending buttons that change colour dependent on success
   button: {
     // margin: theme.spacing(8, 0, 2),
     width: "100%",
