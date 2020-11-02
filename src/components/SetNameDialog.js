@@ -219,7 +219,7 @@ const SetNameDialog = withStyles(styles)((props) => {
               </ListItemAvatar>
               <ListItemText secondary={`Tell ENS what contract manages ${props.ensName}`}><b>1.</b> Set a resolver contract</ListItemText>
               <ListItemSecondaryAction>
-                <IconButton edge="end" aria-label="comments">
+                <IconButton edge="end" aria-label="send">
                   <SendIcon />
                 </IconButton>
               </ListItemSecondaryAction>
@@ -230,7 +230,7 @@ const SetNameDialog = withStyles(styles)((props) => {
               </ListItemAvatar>
   <ListItemText secondary={`Send ENS lookups for ${props.ensName} to this address`}><b>2.</b> Set the resolver to point at the contract address</ListItemText>
               <ListItemSecondaryAction>
-                <IconButton edge="end" aria-label="comments">
+                <IconButton edge="end" aria-label="send">
                   <SendIcon />
                 </IconButton>
               </ListItemSecondaryAction>
@@ -240,7 +240,7 @@ const SetNameDialog = withStyles(styles)((props) => {
                 <Avatar className={classes.avatar}><NftIcon fontSize="small" /></Avatar></ListItemAvatar>
               <ListItemText secondary="Highlight the specifc NFT you had in mind"><b>3.</b> Set the token ID field for {props.ensName}</ListItemText>
               <ListItemSecondaryAction>
-                <IconButton edge="end" aria-label="comments">
+                <IconButton edge="end" aria-label="send">
                   <SendIcon />
                 </IconButton>
               </ListItemSecondaryAction>

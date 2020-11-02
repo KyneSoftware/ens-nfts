@@ -42,9 +42,9 @@ If you support ENS names in your application, and you want to add in NFT support
 - If a `tokenID` is set on the resolver contract, it is advised that you verify that this `tokenID` exists within the ERC721 contract, and hasn't been burned or never been minted, for example. 
 
 ## To Do for this Repo
-- [ ] Rebrand to nft.kyne.eu
+- [x] Redeploy to nft.kyne.eu
 - [x] Deploy it to the web
-- [ ] Get an SSL cert sorted
+- [x] Get an SSL cert sorted
 - [ ] Get the set a name working
     - [x] ENS Name field should query the existence of the name in the registry
     - [x] NFT contract address should query the contract exists and responds to ERC165 asking if its an NFT
