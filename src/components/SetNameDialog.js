@@ -10,13 +10,17 @@ import MuiDialogContent from '@material-ui/core/DialogContent';
 import MuiDialogActions from '@material-ui/core/DialogActions';
 import IconButton from '@material-ui/core/IconButton';
 import CloseIcon from '@material-ui/icons/Close';
+import InsertDriveFileOutlined from '@material-ui/icons/InsertDriveFileOutlined';
+import SendIcon from '@material-ui/icons/Send';
 import DescriptionOutlinedIcon from '@material-ui/icons/DescriptionOutlined';
 import Typography from '@material-ui/core/Typography';
-import { ListItem, List, ListItemText, ListItemAvatar, Avatar, CircularProgress } from '@material-ui/core';
+import { ListItem, List, ListItemText, ListItemAvatar, Avatar, CircularProgress, ListItemSecondaryAction } from '@material-ui/core';
 import { NftIcon } from './NftIcon';
 import { useSnackbar } from 'notistack';
 import { getResolver, checkResolverSupportsInterface, setResolver } from '../services/ens';
 import { grey, green, red } from '@material-ui/core/colors';
+
+
 
 const SET_RESOLVER_TEXT_DEFAULT = "Set Resolver"
 const SET_RESOLVER_TEXT_IN_PROGRESS = "Setting Resolver"
@@ -188,13 +192,13 @@ const SetNameDialog = withStyles(styles)((props) => {
       }, 2000);
     }
   };
-  
+
   const buttonClassname = clsx({
     [classes.button]: true,
     [classes.buttonSuccess]: resolverTxSucceeded,
     [classes.buttonFailed]: resolverTxFailed
   });
-  
+
   React.useEffect(() => {
     return () => {
       clearTimeout(timer.current);
@@ -205,20 +209,41 @@ const SetNameDialog = withStyles(styles)((props) => {
     <div>
       <Dialog onClose={onClose} aria-labelledby="customized-dialog-title" open={open}>
         <DialogTitle id="customized-dialog-title" onClose={onClose}>
-          Set <b>{props.ensName}{" "}</b> to point at this NFT?
+          You have 3 transactions to send
         </DialogTitle>
         <DialogContent dividers>
           <List>
+          <ListItem>
+              <ListItemAvatar >
+                <Avatar className={classes.avatar}><InsertDriveFileOutlined fontSize="small" /></Avatar>
+              </ListItemAvatar>
+              <ListItemText secondary={`Tell ENS what contract manages ${props.ensName}`}><b>1.</b> Set a resolver contract</ListItemText>
+              <ListItemSecondaryAction>
+                <IconButton edge="end" aria-label="comments">
+                  <SendIcon />
+                </IconButton>
+              </ListItemSecondaryAction>
+            </ListItem>
             <ListItem>
               <ListItemAvatar >
                 <Avatar className={classes.avatar}><DescriptionOutlinedIcon fontSize="small" /></Avatar>
               </ListItemAvatar>
-              <ListItemText secondary="NFT Contract Address">{props.contractAddress}</ListItemText>
+  <ListItemText secondary={`Send ENS lookups for ${props.ensName} to this address`}><b>2.</b> Set the resolver to point at the contract address</ListItemText>
+              <ListItemSecondaryAction>
+                <IconButton edge="end" aria-label="comments">
+                  <SendIcon />
+                </IconButton>
+              </ListItemSecondaryAction>
             </ListItem>
             <ListItem>
               <ListItemAvatar>
                 <Avatar className={classes.avatar}><NftIcon fontSize="small" /></Avatar></ListItemAvatar>
-              <ListItemText secondary="Token ID">{props.tokenId}</ListItemText>
+              <ListItemText secondary="Highlight the specifc NFT you had in mind"><b>3.</b> Set the token ID field for {props.ensName}</ListItemText>
+              <ListItemSecondaryAction>
+                <IconButton edge="end" aria-label="comments">
+                  <SendIcon />
+                </IconButton>
+              </ListItemSecondaryAction>
             </ListItem>
           </List>
           {!resolverSupportsEip2381 && <Alert severity="info">This action will launch two Metamask transactions. One to set your name to point at an ERC2381-ready resolver contract, and another to set this resolver to resolve the name <b>{props.ensName}</b>{" "} to the above details. <b>This will overwrite anything currently addressed by this name.</b></Alert>}
@@ -238,7 +263,7 @@ const SetNameDialog = withStyles(styles)((props) => {
         </DialogContent>
         <DialogActions>
           <Button onClick={handleConfirm} color="primary">
-            Confirm
+            Close
           </Button>
         </DialogActions>
       </Dialog>
