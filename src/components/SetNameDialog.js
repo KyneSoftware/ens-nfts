@@ -213,42 +213,30 @@ const SetNameDialog = withStyles(styles)((props) => {
         </DialogTitle>
         <DialogContent dividers>
           <List>
-          <ListItem>
+          <ListItem button>
               <ListItemAvatar >
                 <Avatar className={classes.avatar}><InsertDriveFileOutlined fontSize="small" /></Avatar>
               </ListItemAvatar>
               <ListItemText secondary={`Tell ENS what contract manages ${props.ensName}`}><b>1.</b> Set a resolver contract</ListItemText>
-              <ListItemSecondaryAction>
-                <IconButton edge="end" aria-label="send">
-                  <SendIcon />
-                </IconButton>
-              </ListItemSecondaryAction>
+                  <SendIcon color={'secondary'}/>
             </ListItem>
-            <ListItem>
+            <ListItem button>
               <ListItemAvatar >
                 <Avatar className={classes.avatar}><DescriptionOutlinedIcon fontSize="small" /></Avatar>
               </ListItemAvatar>
   <ListItemText secondary={`Send ENS lookups for ${props.ensName} to this address`}><b>2.</b> Set the resolver to point at the contract address</ListItemText>
-              <ListItemSecondaryAction>
-                <IconButton edge="end" aria-label="send">
-                  <SendIcon />
-                </IconButton>
-              </ListItemSecondaryAction>
+                  <SendIcon color={'secondary'}/>
             </ListItem>
-            <ListItem>
+            <ListItem button>
               <ListItemAvatar>
                 <Avatar className={classes.avatar}><NftIcon fontSize="small" /></Avatar></ListItemAvatar>
               <ListItemText secondary="Highlight the specifc NFT you had in mind"><b>3.</b> Set the token ID field for {props.ensName}</ListItemText>
-              <ListItemSecondaryAction>
-                <IconButton edge="end" aria-label="send">
-                  <SendIcon />
-                </IconButton>
-              </ListItemSecondaryAction>
+                  <SendIcon color={'secondary'}/>
             </ListItem>
           </List>
-          {!resolverSupportsEip2381 && <Alert severity="info">This action will launch two Metamask transactions. One to set your name to point at an ERC2381-ready resolver contract, and another to set this resolver to resolve the name <b>{props.ensName}</b>{" "} to the above details. <b>This will overwrite anything currently addressed by this name.</b></Alert>}
+          {!resolverSupportsEip2381 && <Alert severity="info">The above buttons will launch three Metamask transactions. One to set your name to point at an ERC2381-ready resolver contract, and two to set this resolver to resolve the name <b>{props.ensName}</b>{" "} to {props.contractAddress}:{props.tokenId}. <b>This will overwrite anything currently addressed by this name.</b></Alert>}
           {resolverSupportsEip2381 && <Alert severity="info">This action will launch a Metamask transaction to set this resolver to resolve the name <b>{props.ensName}</b>{" "} to the above details. <b>This will overwrite anything currently addressed by this name.</b></Alert>}
-          <div className={classes.wrapper}>
+          {/* <div className={classes.wrapper}>
             <Button
               variant="contained"
               color="primary"
@@ -259,7 +247,7 @@ const SetNameDialog = withStyles(styles)((props) => {
               {resolverTxButtonText}
             </Button>
             {resolverTxInProgress && <CircularProgress size={24} className={classes.buttonProgress} />}
-          </div>
+          </div> */}
         </DialogContent>
         <DialogActions>
           <Button onClick={handleConfirm} color="primary">
