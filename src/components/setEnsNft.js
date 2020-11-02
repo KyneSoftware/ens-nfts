@@ -98,7 +98,7 @@ export default function SetEnsToNft() {
     return () => {
       setSetNameClicked(false)
     }
-  }, [setNameClicked])
+  }, [setNameClicked, contractAddress, ensName, tokenId, validContractAddress, validEnsName, validTokenId])
 
   const onModalClose = () => {
     setShowDialog(false)
@@ -115,7 +115,7 @@ export default function SetEnsToNft() {
       console.log(`Not all checks passed, disabling setName button`)
       setSetNameButtonDisabled(true)
     }
-  }, [isLoading, validEnsName, validContractAddress, validTokenId])
+  }, [isLoading, validEnsName, validContractAddress, validTokenId, setNameClicked, contractAddress, ensName, tokenId])
 
   // Handle name change
   const onNameChange = event => {
@@ -184,7 +184,7 @@ export default function SetEnsToNft() {
   }
 
   // Handle contract address input change
-  const onContractChange = event => {
+  const onContractChange = async (event) => {
     const contract = event.target.value
     setContractAddress(contract)
     console.log('Contract address of NFT: ' + contract)
@@ -261,13 +261,13 @@ export default function SetEnsToNft() {
             setContractAddressHelperText(ADDRESS_TEXT_NON_ERC721)
           }
           setValidContractAddress(false)
-
         }
       })
       
     } catch (e) {
       console.error(`There was an issue checking if ${contractAddress.toString()} was an ERC721 contract.`)
       console.error(e)
+      setValidContractAddress(false)
     }
 
   }

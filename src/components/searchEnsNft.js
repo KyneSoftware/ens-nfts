@@ -7,7 +7,7 @@ import { TextField, Button, makeStyles, Avatar, Typography,  Link, Tooltip, Icon
 import ExploreIcon from '@material-ui/icons/Explore';
 import FileCopy from '@material-ui/icons/FileCopy';
 import namehash from 'eth-ens-namehash'
-import { useSnackbar, closeSnackbar } from 'notistack';
+import { useSnackbar } from 'notistack';
 import { getAddr, getResolver, checkResolverSupportsInterface, getTokenId, getEnsOwner, getNftOwner } from '../services/ens'
 import { NftIcon } from "./NftIcon";
 
@@ -130,7 +130,7 @@ export default function SearchEns() {
     } else {
       setSearchDisabled(true)
     }
-  }, [isLoading, validEnsName])
+  }, [isLoading, validEnsName, searchValue])
 
   /* 
     Effect triggered when search is clicked.
@@ -297,7 +297,7 @@ export default function SearchEns() {
       setIsLoading(false)
       setSearchClicked(false)
     }
-  }, [searchClicked])
+  }, [searchClicked, closeSnackbar, enqueueSnackbar, searchValue])
 
 
 

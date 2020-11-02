@@ -101,7 +101,7 @@ const DialogActions = withStyles((theme) => ({
 
 
 const SetNameDialog = withStyles(styles)((props) => {
-  const { children, classes, open, onClose, ...other } = props;
+  const { classes, open, onClose } = props;
   const [confirmClicked, setConfirmClicked] = useState(false);
   //
   const [resolverTxButtonText, setResolverTxButtonText] = useState(SET_RESOLVER_TEXT_DEFAULT)
@@ -114,7 +114,7 @@ const SetNameDialog = withStyles(styles)((props) => {
   // If this name already has a resolver contract set, and this resolver contract supports EIP2381, we can skip the first
   // transaction that calls the ENS registry to update the linked resolver contract.
   const [resolverSupportsEip2381, setResolverSupportsEip2381] = useState(true);
-  const { enqueueSnackbar, closeSnackbar } = useSnackbar();
+  const { enqueueSnackbar } = useSnackbar();
   const timer = React.useRef();
 
 
@@ -139,7 +139,7 @@ const SetNameDialog = withStyles(styles)((props) => {
       console.error(e)
     }
     return () => { }
-  }, [props.open])
+  }, [props.open, props.ensName])
 
   // Effect that launches the metamask tranasctions. 
   useEffect(() => {
@@ -167,7 +167,7 @@ const SetNameDialog = withStyles(styles)((props) => {
     return () => {
       setConfirmClicked(false)
     }
-  }, [confirmClicked])
+  }, [confirmClicked, enqueueSnackbar, props.ensName])
 
   const handleConfirm = () => {
     setConfirmClicked(true);
@@ -179,9 +179,9 @@ const SetNameDialog = withStyles(styles)((props) => {
       setResolverTxInProgress(true);
       setResolverTxButtonText(SET_RESOLVER_TEXT_IN_PROGRESS)
       timer.current = window.setTimeout(() => {
-        // setResolverTxSucceeded(true);
-        // setResolverTxInProgress(false);
-        // setResolverTxButtonText(SET_RESOLVER_TEXT_SUCCESS)
+        setResolverTxSucceeded(true);
+        setResolverTxInProgress(false);
+        setResolverTxButtonText(SET_RESOLVER_TEXT_SUCCESS)
         setResolverTxFailed(true);
         setResolverTxInProgress(false);
         setResolverTxButtonText(SET_RESOLVER_TEXT_FAILED)
