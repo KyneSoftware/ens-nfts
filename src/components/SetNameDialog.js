@@ -18,15 +18,8 @@ import Typography from '@material-ui/core/Typography';
 import { ListItem, List, ListItemText, ListItemAvatar, Avatar, CircularProgress, ListItemSecondaryAction } from '@material-ui/core';
 import { NftIcon } from './NftIcon';
 import { useSnackbar } from 'notistack';
-import { getResolver, checkResolverSupportsInterface, setResolver } from '../services/ens';
+import { getResolver, checkResolverSupportsInterface, setResolver, setAddr } from '../services/ens';
 import { grey, green, red } from '@material-ui/core/colors';
-
-
-
-const SET_RESOLVER_TEXT_DEFAULT = "Set Resolver"
-const SET_RESOLVER_TEXT_IN_PROGRESS = "Setting Resolver"
-const SET_RESOLVER_TEXT_SUCCESS = "Resolver Set"
-const SET_RESOLVER_TEXT_FAILED = "Transaction Failed"
 
 const styles = (theme) => ({
   avatar: {
@@ -110,13 +103,21 @@ const SetNameDialog = withStyles(styles)((props) => {
   const [confirmClicked, setConfirmClicked] = useState(false);
   // boolean triggered when a resolver set button is clicked
   const [resolverClicked, setResolverClicked] = useState(false);
-  const [resolverTxButtonText, setResolverTxButtonText] = useState(SET_RESOLVER_TEXT_DEFAULT)
   // React state that will hold the progress of the set resolver tx.
   const [resolverTxInProgress, setResolverTxInProgress] = useState(false);
   // The state that tracks the success of the resolver tx.
   const [resolverTxSucceeded, setResolverTxSucceeded] = useState(false);
   // The state that tracks if the resolver tx failed
   const [resolverTxFailed, setResolverTxFailed] = useState(false);
+
+  // boolean triggered when address set button is clicked
+  const [addressClicked, setAddressClicked] = useState(false);
+  // React state that will hold the progress of the set address tx.
+  const [addressTxInProgress, setAddressTxInProgress] = useState(false);
+  // The state that tracks the success of the address tx.
+  const [addressTxSucceeded, setAddressTxSucceeded] = useState(false);
+  // The state that tracks if the address tx failed
+  const [addressTxFailed, setAddressTxFailed] = useState(false);
   
   // If this name already has a resolver contract set, and this resolver contract supports EIP2381, we can skip the first 
   // transaction that calls the ENS registry to update the linked resolver contract.
@@ -150,15 +151,15 @@ const SetNameDialog = withStyles(styles)((props) => {
     return () => { }
   }, [props.open, props.ensName])
 
-  // Effect that launches the metamask tranasctions. 
+  // Effect that launches the metamask tranasction `SetResolver`. 
   useEffect(() => {
     if (resolverClicked) {
-      console.log(`SetResolver Clicked, time to trigger transactions.`)
+      console.log(`SetResolver Clicked, time to trigger transaction.`)
       enqueueSnackbar(`Setting resolver for ${props.ensName}`, {
         variant: 'default',
       })
       setResolver(props.ensName).then((response) => {
-        console.log('Setting the resolver has returned, next we will set the address and tokenId fields on the new resolver.')
+        console.log('Setting the resolver has returned')
         enqueueSnackbar(`Setting ${props.ensName} to contract address`, {
           variant: 'default',
         })
@@ -174,14 +175,45 @@ const SetNameDialog = withStyles(styles)((props) => {
         setResolverTxSucceeded(false)
       })
     } else {
-
+      // This fires when something other than resolverClicked updates in the effect dependencies, we don't want to action on it right now
     }
-
     return () => {
       setResolverClicked(false)
       setResolverTxInProgress(false)
     }
   }, [resolverClicked, resolverTxInProgress, enqueueSnackbar, props.ensName])
+
+  // Effect that launches the metamask tranasction `setAddr`. 
+  useEffect(() => {
+    if (addressClicked) {
+      console.log(`addressClicked, time to trigger transaction.`)
+      enqueueSnackbar(`Setting address for ${props.ensName}`, {
+        variant: 'default',
+      })
+      setAddr(props.ensName, props.contractAddress).then(() => {
+        console.log('Setting the address has returned')
+        enqueueSnackbar(`Setting ${props.ensName} to contract address`, {
+          variant: 'default',
+        })
+        setAddressTxSucceeded(true)
+        setAddressTxFailed(false)
+      }).catch((err) => {
+        console.error('There was an issue setting the address for this name')
+        console.log(err)
+        enqueueSnackbar(`Failed to set address for ${props.ensName}`, {
+          variant: 'error',
+        })
+        setAddressTxFailed(true)
+        setAddressTxSucceeded(false)
+      })
+    } else {
+      // This fires when something other than addressClicked updates in the effect dependencies, we don't want to action on it right now
+    }
+    return () => {
+      setAddressClicked(false)
+      setAddressTxInProgress(false)
+    }
+  }, [addressClicked, addressTxInProgress, enqueueSnackbar, props.ensName])
 
   const handleConfirm = () => {
     setConfirmClicked(true);
@@ -190,6 +222,11 @@ const SetNameDialog = withStyles(styles)((props) => {
   const handleSetResolverClick = () => {
     setResolverClicked(true)
     setResolverTxInProgress(true)
+  };
+
+  const handleSetAddressClick = () => {
+    setAddressClicked(true)
+    setAddressTxInProgress(true)
   };
 
   const buttonClassname = clsx({
@@ -225,12 +262,14 @@ const SetNameDialog = withStyles(styles)((props) => {
               {!resolverTxInProgress && !resolverSupportsEip2381 && !resolverTxSucceeded && <SendIcon color={'secondary'} />}
               {!resolverTxInProgress && (resolverSupportsEip2381 || resolverTxSucceeded) && <DoneIcon color={'secondary'} />}
             </ListItem>
-            <ListItem button >
+            <ListItem button disabled={addressTxInProgress} onClick={handleSetAddressClick}>
               <ListItemAvatar >
                 <Avatar className={classes.avatar}><DescriptionOutlinedIcon fontSize="small" /></Avatar>
               </ListItemAvatar>
               <ListItemText secondary={`Send ENS lookups for ${props.ensName} to this address`}><b>2.</b> Set the resolver to point at the contract address</ListItemText>
-              <SendIcon color={'secondary'} />
+              {addressTxInProgress && <CircularProgress  className={classes.buttonProgress} />}
+              {!addressTxInProgress && !addressTxSucceeded && <SendIcon color={'secondary'} />}
+              {!addressTxInProgress && addressTxSucceeded && <DoneIcon color={'secondary'} />}
             </ListItem>
             <ListItem button>
               <ListItemAvatar>

@@ -5,6 +5,7 @@ import namehash from 'eth-ens-namehash'
 import ensAbi from '../abis/ens-registry.json'
 import eip2381ResolverAbi from '../abis/eip2381-resolver.json'
 import erc721Abi from '../abis/erc721-abi.json'
+import { formatBytes32String, parseBytes32String } from 'ethers/lib/utils'
 
 const ENS_REGISTRY_ADDRESS = '0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e'
 const ENS_NFT_RESOLVERS = [
@@ -145,6 +146,27 @@ export async function getAddr(name: string): Promise<string> {
     })
 }
 
+// Sets a resolver contract to an Ethereum address
+export async function setAddr(name: string, address: string): Promise<string> {
+    const { ethereum } = typeof window !== `undefined` ? window as any : null
+    const provider = new ethers.providers.Web3Provider(ethereum)
+    const signer = provider.getSigner()
+    const resolverAddress = await getResolver(name)
+    const resolver = new ethers.Contract(resolverAddress, eip2381ResolverAbi, signer);
+    const hash = namehash.hash(name)
+    const strippedHash = hash.substring(2)
+    const strippedHashArray = strippedHash.split('')
+    
+    console.log(`Calling resolver ${resolverAddress} to set address. Node hash: ${strippedHashArray.toString()}. Length: ${strippedHash.length.toString()}`)
+    console.log(JSON.stringify(resolver))
+    // Set the resolver to resolve ${name} to ${address}
+    resolver.setAddr()
+    console.log('fuck')
+    return await resolver.setAddr(hash, address).then(() => {
+        console.log(`ens.ts: ens.setAddr(${name})`)
+        return
+    })
+}
 // Queries a resolver contract for a TokenID
 export async function getTokenId(name: string, resolverAddress: string): Promise<string> {
     const { ethereum } = typeof window !== `undefined` ? window as any : null
