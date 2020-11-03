@@ -92,7 +92,7 @@ export default function SetEnsToNft() {
   // The effect that runs when submit is clicked
   useEffect(() => {
     console.log(`Set Name clicked, checking the validity of these fields before launching confirmation modal.`)
-    if(validEnsName && validContractAddress && validTokenId && ensName !== '' && contractAddress !== '' && tokenId !== '' && setNameClicked){
+    if(validEnsName && validContractAddress && validTokenId && ensName !== '' && contractAddress !== '' && contractAddress !== "0x0000000000000000000000000000000000000000" && tokenId !== '' && setNameClicked){
       setShowDialog(true)
     }
     return () => {

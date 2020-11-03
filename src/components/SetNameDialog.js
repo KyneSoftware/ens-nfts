@@ -12,6 +12,7 @@ import IconButton from '@material-ui/core/IconButton';
 import CloseIcon from '@material-ui/icons/Close';
 import InsertDriveFileOutlined from '@material-ui/icons/InsertDriveFileOutlined';
 import SendIcon from '@material-ui/icons/Send';
+import DoneIcon from '@material-ui/icons/Done';
 import DescriptionOutlinedIcon from '@material-ui/icons/DescriptionOutlined';
 import Typography from '@material-ui/core/Typography';
 import { ListItem, List, ListItemText, ListItemAvatar, Avatar, CircularProgress, ListItemSecondaryAction } from '@material-ui/core';
@@ -115,14 +116,17 @@ const SetNameDialog = withStyles(styles)((props) => {
   const [resolverTxSucceeded, setResolverTxSucceeded] = useState(false);
   // The state that tracks if the resolver tx failed
   const [resolverTxFailed, setResolverTxFailed] = useState(false);
-  // If this name already has a resolver contract set, and this resolver contract supports EIP2381, we can skip the first
+  
+  // If this name already has a resolver contract set, and this resolver contract supports EIP2381, we can skip the first 
   // transaction that calls the ENS registry to update the linked resolver contract.
   const [resolverSupportsEip2381, setResolverSupportsEip2381] = useState(true);
+
+  // If the ENS name already points at the correct address, we can skip the second
   const { enqueueSnackbar } = useSnackbar();
   const timer = React.useRef();
 
 
-  // Check if we are doing 1 or 2 transactions in this modal depening on if the name points at a resolver
+  // Check if we are doing 1, 2 or 3 transactions in this modal depening on if the name points at a resolver
   // and whether that resolver supports EIP2381. 
   useEffect(() => {
     try {
@@ -213,30 +217,36 @@ const SetNameDialog = withStyles(styles)((props) => {
         </DialogTitle>
         <DialogContent dividers>
           <List>
-          <ListItem button>
+            <ListItem button disabled={resolverTxInProgress || resolverSupportsEip2381} onClick={handleSetResolverClick}>
               <ListItemAvatar >
                 <Avatar className={classes.avatar}><InsertDriveFileOutlined fontSize="small" /></Avatar>
               </ListItemAvatar>
-              <ListItemText secondary={`Tell ENS what contract manages ${props.ensName}`}><b>1.</b> Set a resolver contract</ListItemText>
-                  <SendIcon color={'secondary'}/>
+              <ListItemText secondary={`Tell ENS what contract manages ${props.ensName}`}>
+              {!resolverTxInProgress && !resolverSupportsEip2381 &&<div><b>1.</b> Set a resolver contract</div>}
+              {resolverTxInProgress && <div><b>1.</b> Setting resolver</div>}
+              {resolverSupportsEip2381 && <div><b>1.</b> Resolver set</div>}
+              </ListItemText>
+              {resolverTxInProgress && <CircularProgress  className={classes.buttonProgress} />}
+              {!resolverTxInProgress && !resolverSupportsEip2381 && <SendIcon color={'secondary'} />}
+              {!resolverTxInProgress && resolverSupportsEip2381 && <DoneIcon color={'secondary'} />}
             </ListItem>
-            <ListItem button>
+            <ListItem button >
               <ListItemAvatar >
                 <Avatar className={classes.avatar}><DescriptionOutlinedIcon fontSize="small" /></Avatar>
               </ListItemAvatar>
-  <ListItemText secondary={`Send ENS lookups for ${props.ensName} to this address`}><b>2.</b> Set the resolver to point at the contract address</ListItemText>
-                  <SendIcon color={'secondary'}/>
+              <ListItemText secondary={`Send ENS lookups for ${props.ensName} to this address`}><b>2.</b> Set the resolver to point at the contract address</ListItemText>
+              <SendIcon color={'secondary'} />
             </ListItem>
             <ListItem button>
               <ListItemAvatar>
                 <Avatar className={classes.avatar}><NftIcon fontSize="small" /></Avatar></ListItemAvatar>
               <ListItemText secondary="Highlight the specifc NFT you had in mind"><b>3.</b> Set the token ID field for {props.ensName}</ListItemText>
-                  <SendIcon color={'secondary'}/>
+              <SendIcon color={'secondary'} />
             </ListItem>
           </List>
           {!resolverSupportsEip2381 && <Alert severity="info">The above buttons will launch three Metamask transactions. One to set your name to point at an ERC2381-ready resolver contract, and two to set this resolver to resolve the name <b>{props.ensName}</b>{" "} to {props.contractAddress}:{props.tokenId}. <b>This will overwrite anything currently addressed by this name.</b></Alert>}
           {resolverSupportsEip2381 && <Alert severity="info">This action will launch a Metamask transaction to set this resolver to resolve the name <b>{props.ensName}</b>{" "} to the above details. <b>This will overwrite anything currently addressed by this name.</b></Alert>}
-          {/* <div className={classes.wrapper}>
+          <div className={classes.wrapper}>
             <Button
               variant="contained"
               color="primary"
@@ -247,7 +257,7 @@ const SetNameDialog = withStyles(styles)((props) => {
               {resolverTxButtonText}
             </Button>
             {resolverTxInProgress && <CircularProgress size={24} className={classes.buttonProgress} />}
-          </div> */}
+          </div>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleConfirm} color="primary">
