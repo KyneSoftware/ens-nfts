@@ -108,7 +108,8 @@ const DialogActions = withStyles((theme) => ({
 const SetNameDialog = withStyles(styles)((props) => {
   const { classes, open, onClose } = props;
   const [confirmClicked, setConfirmClicked] = useState(false);
-  //
+  // boolean triggered when a resolver set button is clicked
+  const [resolverClicked, setResolverClicked] = useState(false);
   const [resolverTxButtonText, setResolverTxButtonText] = useState(SET_RESOLVER_TEXT_DEFAULT)
   // React state that will hold the progress of the set resolver tx.
   const [resolverTxInProgress, setResolverTxInProgress] = useState(false);
@@ -151,8 +152,8 @@ const SetNameDialog = withStyles(styles)((props) => {
 
   // Effect that launches the metamask tranasctions. 
   useEffect(() => {
-    if (confirmClicked) {
-      console.log(`Confirm Clicked, time to trigger transactions.`)
+    if (resolverClicked) {
+      console.log(`SetResolver Clicked, time to trigger transactions.`)
       enqueueSnackbar(`Setting resolver for ${props.ensName}`, {
         variant: 'default',
       })
@@ -161,40 +162,34 @@ const SetNameDialog = withStyles(styles)((props) => {
         enqueueSnackbar(`Setting ${props.ensName} to contract address`, {
           variant: 'default',
         })
+        setResolverTxSucceeded(true)
+        setResolverTxFailed(false)
       }).catch((err) => {
         console.error('There was an issue setting the resolver contract for this name')
         console.log(err)
         enqueueSnackbar(`Failed to set resolver for ${props.ensName}`, {
           variant: 'error',
         })
+        setResolverTxFailed(true)
+        setResolverTxSucceeded(false)
       })
     } else {
 
     }
 
     return () => {
-      setConfirmClicked(false)
+      setResolverClicked(false)
+      setResolverTxInProgress(false)
     }
-  }, [confirmClicked, enqueueSnackbar, props.ensName])
+  }, [resolverClicked, resolverTxInProgress, enqueueSnackbar, props.ensName])
 
   const handleConfirm = () => {
     setConfirmClicked(true);
   };
 
   const handleSetResolverClick = () => {
-    if (!resolverTxInProgress) {
-      setResolverTxSucceeded(false);
-      setResolverTxInProgress(true);
-      setResolverTxButtonText(SET_RESOLVER_TEXT_IN_PROGRESS)
-      timer.current = window.setTimeout(() => {
-        setResolverTxSucceeded(true);
-        setResolverTxInProgress(false);
-        setResolverTxButtonText(SET_RESOLVER_TEXT_SUCCESS)
-        setResolverTxFailed(true);
-        setResolverTxInProgress(false);
-        setResolverTxButtonText(SET_RESOLVER_TEXT_FAILED)
-      }, 2000);
-    }
+    setResolverClicked(true)
+    setResolverTxInProgress(true)
   };
 
   const buttonClassname = clsx({
@@ -227,8 +222,8 @@ const SetNameDialog = withStyles(styles)((props) => {
               {resolverSupportsEip2381 && <div><b>1.</b> Resolver set</div>}
               </ListItemText>
               {resolverTxInProgress && <CircularProgress  className={classes.buttonProgress} />}
-              {!resolverTxInProgress && !resolverSupportsEip2381 && <SendIcon color={'secondary'} />}
-              {!resolverTxInProgress && resolverSupportsEip2381 && <DoneIcon color={'secondary'} />}
+              {!resolverTxInProgress && !resolverSupportsEip2381 && !resolverTxSucceeded && <SendIcon color={'secondary'} />}
+              {!resolverTxInProgress && (resolverSupportsEip2381 || resolverTxSucceeded) && <DoneIcon color={'secondary'} />}
             </ListItem>
             <ListItem button >
               <ListItemAvatar >
@@ -246,18 +241,6 @@ const SetNameDialog = withStyles(styles)((props) => {
           </List>
           {!resolverSupportsEip2381 && <Alert severity="info">The above buttons will launch three Metamask transactions. One to set your name to point at an ERC2381-ready resolver contract, and two to set this resolver to resolve the name <b>{props.ensName}</b>{" "} to {props.contractAddress}:{props.tokenId}. <b>This will overwrite anything currently addressed by this name.</b></Alert>}
           {resolverSupportsEip2381 && <Alert severity="info">This action will launch a Metamask transaction to set this resolver to resolve the name <b>{props.ensName}</b>{" "} to the above details. <b>This will overwrite anything currently addressed by this name.</b></Alert>}
-          <div className={classes.wrapper}>
-            <Button
-              variant="contained"
-              color="primary"
-              className={buttonClassname}
-              disabled={resolverTxInProgress}
-              onClick={handleSetResolverClick}
-            >
-              {resolverTxButtonText}
-            </Button>
-            {resolverTxInProgress && <CircularProgress size={24} className={classes.buttonProgress} />}
-          </div>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleConfirm} color="primary">
