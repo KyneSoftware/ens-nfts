@@ -18,7 +18,7 @@ import Typography from '@material-ui/core/Typography';
 import { ListItem, List, ListItemText, ListItemAvatar, Avatar, CircularProgress, ListItemSecondaryAction } from '@material-ui/core';
 import { NftIcon } from './NftIcon';
 import { useSnackbar } from 'notistack';
-import { getResolver, checkResolverSupportsInterface, setResolver, setAddr, getAddr } from '../services/ens';
+import { getResolver, checkResolverSupportsInterface, setResolver, setAddr, getAddr, getTokenId } from '../services/ens';
 import { grey, green, red } from '@material-ui/core/colors';
 import { logger } from '../config/pino';
 
@@ -119,12 +119,23 @@ const SetNameDialog = withStyles(styles)((props) => {
   const [addressTxSucceeded, setAddressTxSucceeded] = useState(false);
   // The state that tracks if the address tx failed
   const [addressTxFailed, setAddressTxFailed] = useState(false);
+
+  // boolean triggered when address set button is clicked
+  const [tokenClicked, setTokenClicked] = useState(false);
+  // React state that will hold the progress of the set address tx.
+  const [tokenTxInProgress, setTokenTxInProgress] = useState(false);
+  // The state that tracks the success of the address tx.
+  const [tokenTxSucceeded, setTokenTxSucceeded] = useState(false);
+  // The state that tracks if the address tx failed
+  const [tokenTxFailed, setTokenTxFailed] = useState(false);
   
   // If this name already has a resolver contract set, and this resolver contract supports EIP2381, we can skip the first 
   // transaction that calls the ENS registry to update the linked resolver contract.
   const [resolverSupportsEip2381, setResolverSupportsEip2381] = useState(false);
   // If this resolver contract already supports EIP2381, and it has the contract address set (both could happen off-app), no need to execute transaction 2, setAddress. 
   const [ contractAddressSet, setContractAddressSet] = useState(false);
+  // If the resolver already supports EIP2381, check if the tokenID field is already set to what we want it to be
+  const [ tokenIdSet, setTokenIdSet] = useState(false);
 
   // If the ENS name already points at the correct address, we can skip the second
   const { enqueueSnackbar } = useSnackbar();
@@ -142,9 +153,9 @@ const SetNameDialog = withStyles(styles)((props) => {
             console.log(`${props.ensName} has a resolver set: ${address}, and it does support EIP 2381: ${supported.toString()}`)
             setResolverSupportsEip2381(true)
             // Given the right resolver is set, check if `addr` is set to the target contract address.
-            getAddr(props.ensName).then((address)=>{
-              console.log(`Resolver address already points at: ${address}, we want to set it to: ${props.contractAddress}`)
-              if(address === props.contractAddress) {
+            getAddr(props.ensName).then((addr)=>{
+              console.log(`Resolver 'addr' field already points at: ${addr}, we want to set it to: ${props.contractAddress}`)
+              if(addr === props.contractAddress) {
                 setContractAddressSet(true)
               }
               else {
@@ -153,6 +164,22 @@ const SetNameDialog = withStyles(styles)((props) => {
               }
             }).catch((err)=>{
               setContractAddressSet(false)
+            })
+
+            // Given an EIP2381 resolver, check if tokenId is what we want it to be
+            getTokenId(props.ensName).then((tokenId)=>{
+              console.log(`Resolver tokenId currently points at: ${tokenId}, we want to set it to: ${props.tokenId}`)
+              if(tokenId === props.tokenId) {
+                setTokenIdSet(true)
+              }
+              else {
+                console.log('Updating this name to point at a new tokenId than the one currently set')
+                setTokenIdSet(false)
+              }
+            }).catch((err)=>{
+              console.error(`Exception thrown getting tokenId set for ${props.ensName} at resolver contract: ${address}`)
+              console.error(err)
+              setTokenIdSet(false)
             })
           } else {
             console.log(`${props.ensName} does not have a resolver set: ${address}, and it does not support EIP 2381: ${supported.toString()}`)
@@ -245,6 +272,11 @@ const SetNameDialog = withStyles(styles)((props) => {
     setAddressTxInProgress(true)
   };
 
+  const handleSetTokenClick = () => {
+    setTokenClicked(true)
+    setTokenTxInProgress(true)
+  };
+
   const buttonClassname = clsx({
     [classes.button]: true,
     [classes.buttonSuccess]: resolverTxSucceeded,
@@ -294,11 +326,17 @@ const SetNameDialog = withStyles(styles)((props) => {
               {!addressTxInProgress && !addressTxSucceeded && !contractAddressSet && <SendIcon color={'secondary'} />}
               {!addressTxInProgress && contractAddressSet && <DoneIcon color={'secondary'} />}
             </ListItem>
-            <ListItem button>
+            <ListItem button disabled={tokenTxInProgress || tokenIdSet } onClick={handleSetTokenClick}>
               <ListItemAvatar>
                 <Avatar className={classes.avatar}><NftIcon fontSize="small" /></Avatar></ListItemAvatar>
-              <ListItemText secondary="Highlight the specifc NFT you had in mind"><b>3.</b> Set the token ID field for {props.ensName}</ListItemText>
-              <SendIcon color={'secondary'} />
+              <ListItemText secondary="Highlight the specifc NFT you had in mind">
+              {!tokenTxInProgress && !tokenIdSet &&<div><b>3.</b> Set the token ID field for {props.ensName}</div>}
+              {tokenTxInProgress && <div><b>3.</b> Setting token ID</div>}
+              {(tokenTxSucceeded || tokenIdSet) && <div><b>3.</b> Token ID Set</div>}
+              </ListItemText>
+              {tokenTxInProgress && <CircularProgress  className={classes.buttonProgress} />}
+              {!tokenTxInProgress && !tokenTxSucceeded && !tokenIdSet && <SendIcon color={'secondary'} />}
+              {!tokenTxInProgress && (tokenTxSucceeded || tokenIdSet) && <DoneIcon color={'secondary'} />}
             </ListItem>
           </List>
           {!resolverSupportsEip2381 && <Alert severity="info">The above buttons will launch three Metamask transactions. One to set your name to point at an ERC2381-ready resolver contract, and two to set this resolver to resolve the name <b>{props.ensName}</b>{" "} to {props.contractAddress}:{props.tokenId}. <b>This will overwrite anything currently addressed by this name.</b></Alert>}
