@@ -347,7 +347,7 @@ export default function SearchEns() {
       <Avatar className={classes.avatar}>
         <ExploreIcon />
       </Avatar>
-      <Typography component="h1" variant="h5">
+      <Typography component="h1" variant="h5" gutterBottom>
         Search for a named NFT
       </Typography>
       <form className={classes.form} noValidate spellCheck={false} onSubmit={onSubmit}>

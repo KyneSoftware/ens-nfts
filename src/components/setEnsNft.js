@@ -336,9 +336,13 @@ export default function SetEnsToNft() {
       <Avatar className={classes.avatar}>
         <FiberNewIcon />
       </Avatar>
-      <Typography component="h1" variant="h5">
+      <Typography component="h1" variant="h5" gutterBottom>
         Name an NFT with ENS
-          </Typography>
+      </Typography>
+      {/* <Typography align={"middle"}>
+        Make sure the ENS name exists and your address is the owner of it. Manage your ENS names over at <Link href="https://app.ens.domains">app.ens.domains</Link>
+      </Typography> */}
+
       <form className={classes.form} noValidate onSubmit={onSubmit}>
         <Grid container spacing={2}>
           <Grid item xs={12}>

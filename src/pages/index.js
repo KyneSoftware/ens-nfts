@@ -52,7 +52,7 @@ export default function IndexPage() {
           <SEO title="Home" />
           <Container component="main" maxWidth="xs">
             <CssBaseline />
-            <Typography component="h1" variant="h5" align={"center"}>
+            <Typography component="h1" variant="h5" align={"center"} gutterBottom>
               What is this site?
             </Typography>
             <Typography gutterBottom>
