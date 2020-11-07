@@ -101,7 +101,6 @@ const DialogActions = withStyles((theme) => ({
 
 const SetNameDialog = withStyles(styles)((props) => {
   const { classes, open, onClose } = props;
-  const [confirmClicked, setConfirmClicked] = useState(false);
   // boolean triggered when a resolver set button is clicked
   const [resolverClicked, setResolverClicked] = useState(false);
   // React state that will hold the progress of the set resolver tx.
@@ -170,7 +169,7 @@ const SetNameDialog = withStyles(styles)((props) => {
             })
 
             // Given an EIP2381 resolver, check if tokenId is what we want it to be
-            getTokenId(props.ensName).then((tokenId)=>{
+            getTokenId(props.ensName, address).then((tokenId)=>{
               console.log(`Resolver tokenId currently points at: ${tokenId}, we want to set it to: ${props.tokenId}`)
               if(tokenId === props.tokenId) {
                 setTokenIdSet(true)
@@ -293,10 +292,6 @@ const SetNameDialog = withStyles(styles)((props) => {
     }
   }, [tokenClicked, tokenTxInProgress, enqueueSnackbar, props.ensName])
 
-  const handleConfirm = () => {
-    setConfirmClicked(true);
-  };
-
   const handleSetResolverClick = () => {
     setResolverClicked(true)
     setResolverTxInProgress(true)
@@ -380,7 +375,7 @@ const SetNameDialog = withStyles(styles)((props) => {
           {resolverSupportsEip2381 && <Alert severity="info">This action will launch a Metamask transaction to set this resolver to resolve the name <b>{props.ensName}</b>{" "} to the above details. <b>This will overwrite anything currently addressed by this name.</b></Alert>}
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleConfirm} color="primary">
+          <Button onClick={onClose} color="primary">
             Close
           </Button>
         </DialogActions>
