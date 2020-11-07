@@ -18,7 +18,7 @@ import Typography from '@material-ui/core/Typography';
 import { ListItem, List, ListItemText, ListItemAvatar, Avatar, CircularProgress, ListItemSecondaryAction } from '@material-ui/core';
 import { NftIcon } from './NftIcon';
 import { useSnackbar } from 'notistack';
-import { getResolver, checkResolverSupportsInterface, setResolver, setAddr, getAddr, getTokenId } from '../services/ens';
+import { getResolver, checkResolverSupportsInterface, setResolver, setAddr, getAddr, getTokenId, setTokenId } from '../services/ens';
 import { grey, green, red } from '@material-ui/core/colors';
 import { logger } from '../config/pino';
 
@@ -110,6 +110,8 @@ const SetNameDialog = withStyles(styles)((props) => {
   const [resolverTxSucceeded, setResolverTxSucceeded] = useState(false);
   // The state that tracks if the resolver tx failed
   const [resolverTxFailed, setResolverTxFailed] = useState(false);
+  // The address and token effects need access to the resolver contract address, set it in state when we get it once
+  const [resolverAddress, setResolverAddress] = useState("");
 
   // boolean triggered when address set button is clicked
   const [addressClicked, setAddressClicked] = useState(false);
@@ -148,6 +150,7 @@ const SetNameDialog = withStyles(styles)((props) => {
     try {
       getResolver(props.ensName).then((address) => {
         console.log(`${props.ensName} does have a resolver contract set. ${address}`)
+        setResolverAddress(address)
         checkResolverSupportsInterface(address, '0x4b23de55').then((supported) => {
           if (!!supported) {
             console.log(`${props.ensName} has a resolver set: ${address}, and it does support EIP 2381: ${supported.toString()}`)
@@ -203,8 +206,8 @@ const SetNameDialog = withStyles(styles)((props) => {
       })
       setResolver(props.ensName).then((response) => {
         console.log('Setting the resolver has returned')
-        enqueueSnackbar(`Setting ${props.ensName} to contract address`, {
-          variant: 'default',
+        enqueueSnackbar(`${props.ensName} resolver set`, {
+          variant: 'success',
         })
         setResolverTxSucceeded(true)
         setResolverTxFailed(false)
@@ -235,8 +238,8 @@ const SetNameDialog = withStyles(styles)((props) => {
       })
       setAddr(props.ensName, props.contractAddress).then(() => {
         console.log('Setting the address has returned')
-        enqueueSnackbar(`Setting ${props.ensName} to contract address`, {
-          variant: 'default',
+        enqueueSnackbar(`${props.ensName} address set`, {
+          variant: 'success',
         })
         setAddressTxSucceeded(true)
         setAddressTxFailed(false)
@@ -257,6 +260,38 @@ const SetNameDialog = withStyles(styles)((props) => {
       setAddressTxInProgress(false)
     }
   }, [addressClicked, addressTxInProgress, enqueueSnackbar, props.ensName])
+
+  // Effect that launches the metamask tranasction `setTokenID`. 
+  useEffect(() => {
+    if (tokenClicked) {
+      console.log(`tokenClicked, time to trigger transaction.`)
+      enqueueSnackbar(`Setting token ID for ${props.ensName}`, {
+        variant: 'default',
+      })
+      setTokenId(props.ensName, props.tokenId, resolverAddress).then(() => {
+        console.log('Setting the tokenID has returned')
+        enqueueSnackbar(`${props.ensName} token ID set`, {
+          variant: 'successs',
+        })
+        setTokenTxSucceeded(true)
+        setTokenTxFailed(false)
+      }).catch((err) => {
+        console.error('There was an issue setting the token for this name')
+        console.log(err)
+        enqueueSnackbar(`Failed to set token ID for ${props.ensName}`, {
+          variant: 'error',
+        })
+        setTokenTxFailed(true)
+        setTokenTxSucceeded(false)
+      })
+    } else {
+      // This fires when something other than tokenClicked updates in the effect dependencies, we don't want to action on it right now
+    }
+    return () => {
+      setTokenClicked(false)
+      setTokenTxInProgress(false)
+    }
+  }, [tokenClicked, tokenTxInProgress, enqueueSnackbar, props.ensName])
 
   const handleConfirm = () => {
     setConfirmClicked(true);
@@ -294,8 +329,10 @@ const SetNameDialog = withStyles(styles)((props) => {
       <Dialog onClose={onClose} aria-labelledby="customized-dialog-title" open={open}>
         <DialogTitle id="customized-dialog-title" onClose={onClose}>
           You have 
-          {" " + [!resolverSupportsEip2381, !contractAddressSet, false, false].filter(Boolean).length.toString() + " "}
-           transactions to send
+          {" " + [!resolverSupportsEip2381, !contractAddressSet, !tokenIdSet].filter(Boolean).length.toString() + " "}
+           transaction
+           {([!resolverSupportsEip2381, !contractAddressSet, !tokenIdSet].filter(Boolean).length !== 1) ? "s " : " "} 
+           to send
         </DialogTitle>
         <DialogContent dividers>
           <List>

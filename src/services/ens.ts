@@ -183,6 +183,26 @@ export async function getTokenId(name: string, resolverAddress: string): Promise
     })
 }
 
+// Sets a resolver's `tokenID` field
+export async function setTokenId(name: string, tokenId: string, resolverAddress: string ): Promise<string> {
+    const { ethereum } = typeof window !== `undefined` ? window as any : null
+    const provider = new ethers.providers.Web3Provider(ethereum)
+    const signer = provider.getSigner()
+    const resolver = new ethers.Contract(resolverAddress, eip2381ResolverAbi, signer);
+    const hash = namehash.hash(name)
+    const strippedHash = hash.substring(2)
+    const strippedHashArray = strippedHash.split('')
+    
+    logger.info(`Calling resolver ${resolverAddress} to set tokenID. Node hash: ${strippedHashArray.toString()}. Length: ${strippedHash.length.toString()}`)
+    logger.debug(JSON.stringify(resolver))
+    // Set the resolver to resolve ${name} to ${tokenID}
+
+    return await resolver.setTokenID(hash, tokenId).then(() => {
+        console.log(`ens.ts: ens.setAddr(${name})`)
+        return
+    })
+}
+
 // Queries the owner of an ENS name
 export async function getEnsOwner(name: string): Promise<string> {
     const { ethereum } = typeof window !== `undefined` ? window as any : null
