@@ -24,7 +24,8 @@ import { logger } from '../config/pino';
 
 const styles = (theme) => ({
   avatar: {
-    backgroundColor: '#2E4057',
+    backgroundColor: '#000000',
+    color: '#f6c26c',
     width: theme.spacing(4),
     height: theme.spacing(4),
   },
@@ -46,7 +47,7 @@ const styles = (theme) => ({
   button: {
     // margin: theme.spacing(8, 0, 2),
     width: "100%",
-    backgroundColor: '#2E4057',
+    backgroundColor: '#000000',
   },
   buttonSuccess: {
     backgroundColor: green[500],

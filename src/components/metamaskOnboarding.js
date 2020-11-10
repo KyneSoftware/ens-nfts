@@ -16,11 +16,11 @@ const useStyles = makeStyles((theme) => ({
   },
   avatar: {
     margin: theme.spacing(1),
-    backgroundColor: '#2E4057',
+    backgroundColor: '#000000',
   },
   button: {
     margin: theme.spacing(1, 0, 2),
-    backgroundColor: '#2E4057',
+    backgroundColor: '#000000',
   }
 }));
 

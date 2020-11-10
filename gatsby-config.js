@@ -22,7 +22,7 @@ module.exports = {
         name: `ens-nfts`,
         short_name: `Name your NFts`,
         start_url: `/`,
-        background_color: `#2E4057`,
+        background_color: `#000000`,
         theme_color: `#F6C26C`,
         display: `minimal-ui`,
         icon: `src/images/IconLargeBlack.png`, // This path is relative to the root of the site.

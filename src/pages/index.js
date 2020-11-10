@@ -23,10 +23,10 @@ function getWeb3Library(provider) {
 const theme = createMuiTheme({
   palette: {
     primary: {
-      main: `#2E4057`,
+      main: `#000000`,
     },
     secondary: {
-      main: `#F6C26C`,
+      main: `#f6c26c`,
     },
     info: {
       main: `#449DD1`
