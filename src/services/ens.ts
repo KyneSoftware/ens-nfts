@@ -154,16 +154,11 @@ export async function setAddr(name: string, address: string): Promise<string> {
     const signer = provider.getSigner()
     const resolverAddress = await getResolver(name)
     const resolver = new ethers.Contract(resolverAddress, eip2381ResolverAbi, signer);
-    const hash = namehash.hash(name)
-    const strippedHash = hash.substring(2)
-    const strippedHashArray = strippedHash.split('')
-    
-    logger.info(`Calling resolver ${resolverAddress} to set address. Node hash: ${strippedHashArray.toString()}. Length: ${strippedHash.length.toString()}`)
-    logger.debug(JSON.stringify(resolver))
+    const hash = ethers.utils.namehash(name)
+    const hexstring = ethers.utils.hexlify(hash)
+    logger.debug(`Calling resolver ${resolverAddress} to set address: ${address.toString()}. Node hash: ${hexstring.toString()}. `)
     // Set the resolver to resolve ${name} to ${address}
-    resolver.setAddr()
-    console.log('fuck')
-    return await resolver.setAddr(hash, address).then(() => {
+    return await resolver["setAddr(bytes32,address)"](hash, address).then(() => {
         console.log(`ens.ts: ens.setAddr(${name})`)
         return
     })
