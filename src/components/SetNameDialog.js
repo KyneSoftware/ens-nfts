@@ -357,7 +357,7 @@ const SetNameDialog = withStyles(styles)((props) => {
               </ListItemText>
               {addressTxInProgress && <CircularProgress  className={classes.buttonProgress} />}
               {!addressTxInProgress && !addressTxSucceeded && !contractAddressSet && <SendIcon color={'secondary'} />}
-              {!addressTxInProgress && contractAddressSet && <DoneIcon color={'secondary'} />}
+              {!addressTxInProgress && ( addressTxSucceeded || contractAddressSet ) && <DoneIcon color={'secondary'} />}
             </ListItem>
             <ListItem button disabled={tokenTxInProgress || tokenIdSet } onClick={handleSetTokenClick}>
               <ListItemAvatar>
