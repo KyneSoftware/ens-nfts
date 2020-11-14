@@ -56,7 +56,7 @@ export default function IndexPage() {
               What is this site?
             </Typography>
             <Typography gutterBottom>
-              Ethereum and the Ethereum Name Service go hand in hand like the Internet Protocol and the Domain Name Service. ENS has been used to address people, contracts, cryptokitties and more. However, until recently, it hasn't been possible to assign an ENS name to a specific NFT within an NFT contract.
+              Ethereum and the Ethereum Name Service go hand in hand like the Internet and DNS. ENS has been used to address people, contracts, cryptokitties and more. However, until recently, it hasn't been possible to assign an ENS name to a specific NFT. This is becoming a problem as more and more fradulent copycat NFTs are being minted and wash-traded with the intention of being sold to unsuspecting investors. It is important that NFT issuers can signal the authenticity of an NFT on chain. The best way to do that in my mind is using an ENS subdomain controlled by the issuer.
             </Typography>
             <Typography gutterBottom>
               My ENS name is <code>oisin.eth</code>, and when I went to Devcon last year, I bought an NFT ticket by auction on Ethereum. I wanted to set an ENS subdomain name to point at it, but I realised it wasn't possible, so I made an <Link href="https://github.com/ethereum/EIPs/pull/2381" target="_blank" rel="noreferrer">EIP</Link> to fix it.

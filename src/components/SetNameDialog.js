@@ -373,7 +373,7 @@ const SetNameDialog = withStyles(styles)((props) => {
             </ListItem>
           </List>
           {!resolverSupportsEip2381 && <Alert severity="info">The above buttons will launch three Metamask transactions. One to set your name to point at an ERC2381-ready resolver contract, and two to set this resolver to resolve the name <b>{props.ensName}</b>{" "} to {props.contractAddress}:{props.tokenId}. <b>This will overwrite anything currently addressed by this name.</b></Alert>}
-          {resolverSupportsEip2381 && <Alert severity="info">This action will launch a Metamask transaction to set this resolver to resolve the name <b>{props.ensName}</b>{" "} to the above details. <b>This will overwrite anything currently addressed by this name.</b></Alert>}
+          {resolverSupportsEip2381 && <Alert severity="info">The above buttons will launch Metamask transactions to set this resolver to resolve the name <b>{props.ensName}</b>{" "} to the above details. <b>This will overwrite anything currently addressed by this name.</b></Alert>}
         </DialogContent>
         <DialogActions>
           <Button onClick={onClose} color="primary">
