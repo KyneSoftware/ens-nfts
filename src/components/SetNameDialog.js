@@ -350,9 +350,9 @@ const SetNameDialog = withStyles(styles)((props) => {
                 <Avatar className={classes.avatar}><DescriptionOutlinedIcon fontSize="small" /></Avatar>
               </ListItemAvatar>
               <ListItemText secondary={`Send ENS lookups for ${props.ensName} to this address`}>
-              {!addressTxInProgress && !contractAddressSet && <div><b>2.</b> Set the resolver to point at the contract address</div>}
+              {!addressTxInProgress && !contractAddressSet && !addressTxSucceeded && <div><b>2.</b> Set the resolver to point at the contract address</div>}
               {addressTxInProgress && <div><b>2.</b> Setting address</div>}
-              {contractAddressSet && <div><b>2.</b> Contract Address Set</div>}
+              {(contractAddressSet || addressTxSucceeded) && !addressTxInProgress && <div><b>2.</b> Contract Address Set</div>}
                 
               </ListItemText>
               {addressTxInProgress && <CircularProgress  className={classes.buttonProgress} />}
@@ -363,7 +363,7 @@ const SetNameDialog = withStyles(styles)((props) => {
               <ListItemAvatar>
                 <Avatar className={classes.avatar}><NftIcon fontSize="small" /></Avatar></ListItemAvatar>
               <ListItemText secondary="Highlight the specifc NFT you had in mind">
-              {!tokenTxInProgress && !tokenIdSet &&<div><b>3.</b> Set the token ID field for {props.ensName}</div>}
+              {!tokenTxInProgress && !tokenIdSet && !tokenTxSucceeded && <div><b>3.</b> Set the token ID field for {props.ensName}</div>}
               {tokenTxInProgress && <div><b>3.</b> Setting token ID</div>}
               {(tokenTxSucceeded || tokenIdSet) && <div><b>3.</b> Token ID Set</div>}
               </ListItemText>
