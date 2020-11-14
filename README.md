@@ -45,13 +45,13 @@ If you support ENS names in your application, and you want to add in NFT support
 - [x] Redeploy to nft.kyne.eu
 - [x] Deploy it to the web
 - [x] Get an SSL cert sorted
-- [ ] Get the set a name working
+- [x] Get the set a name working
     - [x] ENS Name field should query the existence of the name in the registry
     - [x] NFT contract address should query the contract exists and responds to ERC165 asking if its an NFT
     - [x] Token ID should check if it exists in the NFT
-    - [ ] These checks should run as effects rather than as onBlurs, maybe with a debounce
+    - [x] These checks should run as effects rather than as onBlurs, maybe with a debounce
     - [x] Set Name should launch a confirmation modal
-    - [ ] Confirmation modal should launch a metamask transaction(s)
+    - [x] Confirmation modal should launch a metamask transaction(s)
 - [x] Get a metamask icon above the connect metamask button
 - [x] Get a better NFT found display (flashy icon, no line wrapping, maybe getting NFT metadata?)
 - [x] Get click to copy to clipboard buttons working for NFT found data
@@ -63,3 +63,9 @@ If you support ENS names in your application, and you want to add in NFT support
 - [x] Don't error if there is uppercase letters in an ENS name, they are taken care of in normalisation
 - [x] Centre title
 - [ ] Setup debug, info and error logging
+- [ ] Create social link preview images
+- [ ] Handle the crash if you try and set a name to a cryptopunk
+- [ ] Consider being less strict about enforcing ERC721 conformance
+- [ ] Set repo public
+- [ ] Reverse resolve ENS names of owners
+- [ ] Pull NFT Metadata and render after a search
