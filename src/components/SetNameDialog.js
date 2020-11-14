@@ -157,8 +157,8 @@ const SetNameDialog = withStyles(styles)((props) => {
             setResolverSupportsEip2381(true)
             // Given the right resolver is set, check if `addr` is set to the target contract address.
             getAddr(props.ensName).then((addr)=>{
-              console.log(`Resolver 'addr' field already points at: ${addr}, we want to set it to: ${props.contractAddress}`)
-              if(addr === props.contractAddress) {
+              console.log(`Resolver 'addr' field already points at: ${addr}, we want to set it to: ${props.contractAddress}. Do they match? ${(addr == props.contractAddress).toString()}`)
+              if(addr.toLowerCase() === props.contractAddress.toLowerCase()) {
                 setContractAddressSet(true)
               }
               else {
