@@ -111,7 +111,7 @@ const SetNameDialog = withStyles(styles)((props) => {
   // The state that tracks if the resolver tx failed
   const [resolverTxFailed, setResolverTxFailed] = useState(false);
   // The address and token effects need access to the resolver contract address, set it in state when we get it once
-  const [resolverAddress, setResolverAddress] = useState("");
+  const [resolverAddress, setResolverAddress] = useState("0xb2eef9d0235a339179a7e177e818439dcca9d76e");
 
   // boolean triggered when address set button is clicked
   const [addressClicked, setAddressClicked] = useState(false);
@@ -236,7 +236,7 @@ const SetNameDialog = withStyles(styles)((props) => {
       enqueueSnackbar(`Setting address for ${props.ensName}`, {
         variant: 'default',
       })
-      setAddr(props.ensName, props.contractAddress).then(() => {
+      setAddr(props.ensName, props.contractAddress, resolverAddress).then(() => {
         console.log('Setting the address has returned')
         enqueueSnackbar(`${props.ensName} address set`, {
           variant: 'success',

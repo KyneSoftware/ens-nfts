@@ -148,11 +148,10 @@ export async function getAddr(name: string): Promise<string> {
 }
 
 // Sets a resolver contract to an Ethereum address
-export async function setAddr(name: string, address: string): Promise<string> {
+export async function setAddr(name: string, address: string, resolverAddress: string): Promise<string> {
     const { ethereum } = typeof window !== `undefined` ? window as any : null
     const provider = new ethers.providers.Web3Provider(ethereum)
     const signer = provider.getSigner()
-    const resolverAddress = await getResolver(name)
     const resolver = new ethers.Contract(resolverAddress, eip2381ResolverAbi, signer);
     const hash = ethers.utils.namehash(name)
     const hexstring = ethers.utils.hexlify(hash)

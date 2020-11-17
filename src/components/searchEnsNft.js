@@ -429,7 +429,7 @@ export default function SearchEns() {
                     <ListItemText secondary="The ID of this NFT" >Token ID:{" "}
                       <Link href={nftTokenUrl(nftAddress, nftTokenId)} target="_blank" rel="noreferrer">
                         {
-                          nftTokenId.substr(0, 7) + "..." + nftTokenId.substr(nftTokenId.length - 5)
+                          nftTokenId.length > 10 ? nftTokenId.substr(0, 7) + "..." + nftTokenId.substr(nftTokenId.length - 5) : nftTokenId                          
                         }
                       </Link>
                       {" "}
