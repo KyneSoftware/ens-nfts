@@ -49,7 +49,7 @@ export default function IndexPage() {
       <SnackbarProvider maxSnack={3}>
       <ThemeProvider theme={theme}>
         <Layout>
-          <SEO title="Home" />
+          <SEO title="Name your NFTs with ENS" />
           <Container component="main" maxWidth="xs">
             <CssBaseline />
             <Typography component="h1" variant="h5" align={"center"} gutterBottom>
