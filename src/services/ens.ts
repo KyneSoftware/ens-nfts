@@ -257,3 +257,18 @@ export async function checkContractSupportsInterface(contractAddress: string, co
         throw err
     })
 }
+
+// Reverse resolves an ENS name from an address, returns name, null or throws if something goes wrong
+export async function reverseResolveAddress(address: string): Promise<string> {
+    const { ethereum } = typeof window !== `undefined` ? window as any : null
+    const provider = new ethers.providers.Web3Provider(ethereum)
+    
+    return await provider.lookupAddress(address).then((name: string) => {
+        logger.info(`Resolving ${address} on ENS returned: ${name}`)
+        return name
+    }).catch((err: any) => {
+        logger.warn(`Failed to reverse resolve ${address}`)
+        console.error(err)
+        throw err
+    })
+}

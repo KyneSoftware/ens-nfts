@@ -3,7 +3,6 @@ import React, { useEffect, useState } from 'react';
 import { withStyles } from '@material-ui/core/styles';
 import Alert from '@material-ui/lab/Alert';
 import Button from '@material-ui/core/Button';
-import clsx from 'clsx';
 import Dialog from '@material-ui/core/Dialog';
 import MuiDialogTitle from '@material-ui/core/DialogTitle';
 import MuiDialogContent from '@material-ui/core/DialogContent';
@@ -15,7 +14,7 @@ import SendIcon from '@material-ui/icons/Send';
 import DoneIcon from '@material-ui/icons/Done';
 import DescriptionOutlinedIcon from '@material-ui/icons/DescriptionOutlined';
 import Typography from '@material-ui/core/Typography';
-import { ListItem, List, ListItemText, ListItemAvatar, Avatar, CircularProgress, ListItemSecondaryAction } from '@material-ui/core';
+import { ListItem, List, ListItemText, ListItemAvatar, Avatar, CircularProgress } from '@material-ui/core';
 import { NftIcon } from './NftIcon';
 import { useSnackbar } from 'notistack';
 import { getResolver, checkResolverSupportsInterface, setResolver, setAddr, getAddr, getTokenId, setTokenId } from '../services/ens';
@@ -141,7 +140,6 @@ const SetNameDialog = withStyles(styles)((props) => {
 
   // If the ENS name already points at the correct address, we can skip the second
   const { enqueueSnackbar } = useSnackbar();
-  const timer = React.useRef();
 
 
   // Check if we are doing 1, 2 or 3 transactions in this modal depening on if the name points at a resolver
@@ -153,11 +151,11 @@ const SetNameDialog = withStyles(styles)((props) => {
         setResolverAddress(address)
         checkResolverSupportsInterface(address, '0x4b23de55').then((supported) => {
           if (!!supported) {
-            console.log(`${props.ensName} has a resolver set: ${address}, and it does support EIP 2381: ${supported.toString()}`)
+            logger.debug(`${props.ensName} has a resolver set: ${address}, and it does support EIP 2381: ${supported.toString()}`)
             setResolverSupportsEip2381(true)
             // Given the right resolver is set, check if `addr` is set to the target contract address.
             getAddr(props.ensName).then((addr)=>{
-              console.log(`Resolver 'addr' field already points at: ${addr}, we want to set it to: ${props.contractAddress}. Do they match? ${(addr == props.contractAddress).toString()}`)
+              console.log(`Resolver 'addr' field already points at: ${addr}, we want to set it to: ${props.contractAddress}. Do they match? ${(addr.toLowerCase() === props.contractAddress.toLowerCase()).toString()}`)
               if(addr.toLowerCase() === props.contractAddress.toLowerCase()) {
                 setContractAddressSet(true)
               }
@@ -195,7 +193,7 @@ const SetNameDialog = withStyles(styles)((props) => {
       console.error(e)
     }
     return () => { }
-  }, [props.open, props.ensName])
+  }, [props.open, props.ensName, props.contractAddress, props.tokenId])
 
   // Effect that launches the metamask tranasction `SetResolver`. 
   useEffect(() => {
@@ -259,7 +257,7 @@ const SetNameDialog = withStyles(styles)((props) => {
       setAddressClicked(false)
       setAddressTxInProgress(false)
     }
-  }, [addressClicked, addressTxInProgress, enqueueSnackbar, props.ensName])
+  }, [addressClicked, addressTxInProgress, resolverAddress, enqueueSnackbar, props.ensName, props.contractAddress])
 
   // Effect that launches the metamask tranasction `setTokenID`. 
   useEffect(() => {
@@ -291,7 +289,7 @@ const SetNameDialog = withStyles(styles)((props) => {
       setTokenClicked(false)
       setTokenTxInProgress(false)
     }
-  }, [tokenClicked, tokenTxInProgress, enqueueSnackbar, props.ensName])
+  }, [tokenClicked, tokenTxInProgress, enqueueSnackbar, props.ensName, props.tokenId, resolverAddress])
 
   const handleSetResolverClick = () => {
     setResolverClicked(true)
@@ -307,18 +305,6 @@ const SetNameDialog = withStyles(styles)((props) => {
     setTokenClicked(true)
     setTokenTxInProgress(true)
   };
-
-  const buttonClassname = clsx({
-    [classes.button]: true,
-    [classes.buttonSuccess]: resolverTxSucceeded,
-    [classes.buttonFailed]: resolverTxFailed
-  });
-
-  React.useEffect(() => {
-    return () => {
-      clearTimeout(timer.current);
-    };
-  }, []);
 
   return (
     <div>
