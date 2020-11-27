@@ -6,8 +6,8 @@ import React, { useState, useEffect } from "react"
 import { Grid, TextField, Button, makeStyles, Avatar, Typography, Link } from "@material-ui/core"
 import FiberNewIcon from '@material-ui/icons/FiberNew';
 import namehash from 'eth-ens-namehash'
-import { getEnsOwner, nameExists, contractExists, checkContractSupportsInterface, tokenExists } from '../services/ens'
-import { ethers } from 'ethers'
+import { getEnsOwner, nameExists, contractExists, checkContractSupportsInterface, tokenExists, multiTokenExists } from '../services/ens'
+import { ethers, logger } from 'ethers'
 import SetNameDialog from "./SetNameDialog";
 
 const useStyles = makeStyles((theme) => ({
@@ -47,6 +47,7 @@ const ADDRESS_TEXT_INVALID_CHARS = 'Contract address should be a hexadecimal str
 const ADDRESS_TEXT_INCOMPLETE = 'Not the correct length for a contract address';
 const ADDRESS_TEXT_NONEXISTANT = 'Contract does not exist on this network';
 const ADDRESS_TEXT_NON_ERC721 = 'Contract is not an ERC721 type';
+const ADDRESS_TEXT_IS_ERC1155 = 'Contract is an ERC1155 multi-token standard'
 const ADDRESS_TEXT_CHECKSUM_INVALID = 'The checksum for this address is incorrect';
 const ADDRESS_TEXT_UNKNOWN = 'Unknown Error Occurred';
 const ADDRESS_TEXT_ENTERED = 'The ERC721 Contract address';
@@ -55,6 +56,7 @@ const TOKEN_TEXT_NONEXISTANT = 'This TokenID is not present in this contract';
 const TOKEN_TEXT_INVALID = 'TokenID should be a number';
 const TOKEN_TEXT_ENTERED = 'The unique ID of your NFT';
 const TOKEN_TEXT_FOUND = 'Cool NFT, I like it';
+const TOKEN_TEXT_ERC1155 = 'Caution, cannot verify ERC1155 tokens exist';
 
 export default function SetEnsToNft() {
   // ENS name to set
@@ -63,6 +65,8 @@ export default function SetEnsToNft() {
   const [contractAddress, setContractAddress] = useState('')
   // TokenID within contract address, for setting EIP2381 resolver
   const [tokenId, setTokenId] = useState('')
+  // Whether this contract is a multi-token standard (ERC1155) and needs special handling
+  const [contractIs1155, setContractIs1155] = useState(false)
 
   // Helper text for the Name input
   const [nameHelperText, setNameHelperText] = useState(NAME_TEXT_DEFAULT)
@@ -93,7 +97,7 @@ export default function SetEnsToNft() {
   // The effect that runs when submit is clicked
   useEffect(() => {
     console.log(`Set Name clicked, checking the validity of these fields before launching confirmation modal.`)
-    if(validEnsName && validContractAddress && validTokenId && ensName !== '' && contractAddress !== '' && contractAddress !== "0x0000000000000000000000000000000000000000" && tokenId !== '' && setNameClicked){
+    if (validEnsName && validContractAddress && validTokenId && ensName !== '' && contractAddress !== '' && contractAddress !== "0x0000000000000000000000000000000000000000" && tokenId !== '' && setNameClicked) {
       setShowDialog(true)
     }
     return () => {
@@ -150,7 +154,9 @@ export default function SetEnsToNft() {
   // When exiting the name field, check the name exists and that this account is an owner or admin
   const onNameMouseOut = async (event) => {
     console.log(`MouseOut of name, check if it exists.`)
-    const exists = await nameExists(ensName)
+    const exists = await nameExists(ensName).catch((err)=>{
+      setValidEnsName(false)
+    })
     console.log(`Does ${ensName} exist? ${exists.toString()}`)
     if (!!exists) {
       setValidEnsName(true)
@@ -227,10 +233,10 @@ export default function SetEnsToNft() {
     setContractAddressHelperText(ADDRESS_TEXT_ENTERED)
   }
 
-  // When exiting the contract field, check the address exists and that the address is ERC721 conformant
+  // When exiting the contract field, check the address exists and that the address is ERC721 conformant (or ERC1155)
   const onContractMouseOut = async (event) => {
     console.debug(`MouseOut of contract address, check if it exists.`)
-    
+
     // Check contract exists
     try {
       const exists = await contractExists(contractAddress)
@@ -254,21 +260,36 @@ export default function SetEnsToNft() {
 
     // Check contract responds to erc165 supportsInterface(721contractInterface)
     try {
-      // Now check if the current account is an admin of the address
-      console.debug(`Checking if ${contractAddress} has erc165 support, and subsequently if it interfaces ERC721.`)
-      checkContractSupportsInterface(contractAddress, '0x80ac58cd').then((supported)=>{
-        if(!supported) {
+      console.debug(`Checking if ${contractAddress} has erc165 support, and subsequently if it interfaces ERC721 or ERC1155.`)
+      checkContractSupportsInterface(contractAddress, '0x80ac58cd').then((supported) => {
+        if (!supported) {
           if (validContractAddress) {
-            setContractAddressHelperText(ADDRESS_TEXT_NON_ERC721)
+            // The address is valid, but it doesn't conform to ERC721, check if it's ERC1155 or error
+            checkContractSupportsInterface(contractAddress, '0xd9b67a26').then((is1155) => {
+              if (is1155 === true) {
+                setContractAddressHelperText(ADDRESS_TEXT_IS_ERC1155)
+                setContractIs1155(true)
+                setValidContractAddress(true)
+                return
+              } else {
+                // Contract is neither 721 nor 1155 compliant, display error
+                setContractAddressHelperText(ADDRESS_TEXT_NON_ERC721)
+                setValidContractAddress(false)
+                setContractIs1155(false)
+              }
+            })
           }
-          setValidContractAddress(false)
+        } else {
+          console.debug(`${contractAddress} supports ERC721's interface`)
+          setContractIs1155(false)
         }
       })
-      
+
     } catch (e) {
-      console.error(`There was an issue checking if ${contractAddress.toString()} was an ERC721 contract.`)
+      console.error(`There was an issue checking if ${contractAddress.toString()} was an ERC721 or ERC1155 contract.`)
       console.error(e)
       setValidContractAddress(false)
+      setContractIs1155(false)
     }
 
   }
@@ -280,7 +301,7 @@ export default function SetEnsToNft() {
     setTokenId(token)
 
     // Check token contains only digits
-    if(!token.match(/(^[0-9]+$)/)){
+    if (!token.match(/(^[0-9]+$)/)) {
       setValidTokenId(false)
       setTokenIdHelperText(TOKEN_TEXT_INVALID)
       return
@@ -295,23 +316,31 @@ export default function SetEnsToNft() {
     const token = event.target.value
     console.debug(`MouseOut of tokenID, check if ${token} exists in contract ${contractAddress}.`)
 
-    tokenExists(contractAddress, tokenId).then((exists)=>{
-      console.log(`Token ${tokenId} exists in contract ${contractAddress}. ${!!exists.toString()}`)
-      if(!!exists){
+    // Special case, handle checking if a token exists a different way if it is ERC1155
+    if (contractIs1155) {
         setValidTokenId(true)
-        setTokenIdHelperText(TOKEN_TEXT_FOUND)
-      } else {
-        console.log(`This token ${tokenId} was not found in contract ${contractAddress}`)
+        setTokenIdHelperText(TOKEN_TEXT_ERC1155)
+    }
+    else {
+      // ERC721 check if token exists
+      tokenExists(contractAddress, tokenId).then((exists) => {
+        console.log(`Token ${tokenId} exists in contract ${contractAddress}. ${!!exists.toString()}`)
+        if (!!exists) {
+          setValidTokenId(true)
+          setTokenIdHelperText(TOKEN_TEXT_FOUND)
+        } else {
+          console.log(`This token ${tokenId} was not found in contract ${contractAddress}`)
+          setValidTokenId(false)
+          setTokenIdHelperText(TOKEN_TEXT_NONEXISTANT)
+        }
+
+      }).catch((err) => {
+        console.error(`There was an error thrown while checking if ${tokenId} exists on contract ${contractAddress}`)
+        console.error(err)
         setValidTokenId(false)
         setTokenIdHelperText(TOKEN_TEXT_NONEXISTANT)
-      }
-
-    }).catch((err)=>{
-      console.error(`There was an error thrown while checking if ${tokenId} exists on contract ${contractAddress}`)
-      console.error(err)
-      setValidTokenId(false)
-      setTokenIdHelperText(TOKEN_TEXT_NONEXISTANT)
-    })
+      })
+    }
   }
 
   // Triggers a contract interaction to set a name
@@ -320,14 +349,6 @@ export default function SetEnsToNft() {
     console.log('Setting  resolver for: ' + ensName)
     setIsLoading(true)
     setSetNameClicked(true)
-
-    // setTimeout(() => {
-    //   // setValidEnsName(false)
-    //   // setValidTokenId(false)
-    //   // setValidContractAddress(false)
-    //   setIsLoading(false)
-    // }, 1000)
-
   }
 
 
@@ -360,9 +381,9 @@ export default function SetEnsToNft() {
               id="ensName"
               label="ENS Name"
               type="url"
-              autoCapitalize="off" 
+              autoCapitalize="off"
               autoComplete="off"
-              spellCheck="false" 
+              spellCheck="false"
               autoCorrect="off"
             />
           </Grid>
@@ -380,9 +401,9 @@ export default function SetEnsToNft() {
               label="NFT Contract Address"
               name="contractAddress"
               type="url"
-              autoCapitalize="off" 
+              autoCapitalize="off"
               autoComplete="off"
-              spellCheck="false" 
+              spellCheck="false"
               autoCorrect="off"
             />
           </Grid>
@@ -400,9 +421,9 @@ export default function SetEnsToNft() {
               label="Token ID"
               name="tokenId"
               type="url"
-              autoCapitalize="off" 
+              autoCapitalize="off"
               autoComplete="off"
-              spellCheck="false" 
+              spellCheck="false"
               autoCorrect="off"
             />
           </Grid>
@@ -417,7 +438,7 @@ export default function SetEnsToNft() {
         >
           Set Name
           </Button>
-          <SetNameDialog open={showDialog} onClose={onModalClose} contractAddress={contractAddress} tokenId={tokenId} ensName={ensName}/>
+        <SetNameDialog open={showDialog} onClose={onModalClose} contractAddress={contractAddress} tokenId={tokenId} ensName={ensName} />
         <Grid container justify="flex-end">
           <Grid item>
             <Link href="https://github.com/OisinKyne/ens_nfts/issues/" variant="body2" className={classes.link} target="_blank" rel="noreferrer">
