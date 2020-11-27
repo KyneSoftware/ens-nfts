@@ -129,14 +129,14 @@ const SetNameDialog = withStyles(styles)((props) => {
   const [tokenTxSucceeded, setTokenTxSucceeded] = useState(false);
   // The state that tracks if the address tx failed
   const [tokenTxFailed, setTokenTxFailed] = useState(false);
-  
+
   // If this name already has a resolver contract set, and this resolver contract supports EIP2381, we can skip the first 
   // transaction that calls the ENS registry to update the linked resolver contract.
   const [resolverSupportsEip2381, setResolverSupportsEip2381] = useState(false);
   // If this resolver contract already supports EIP2381, and it has the contract address set (both could happen off-app), no need to execute transaction 2, setAddress. 
-  const [ contractAddressSet, setContractAddressSet] = useState(false);
+  const [contractAddressSet, setContractAddressSet] = useState(false);
   // If the resolver already supports EIP2381, check if the tokenID field is already set to what we want it to be
-  const [ tokenIdSet, setTokenIdSet] = useState(false);
+  const [tokenIdSet, setTokenIdSet] = useState(false);
 
   // If the ENS name already points at the correct address, we can skip the second
   const { enqueueSnackbar } = useSnackbar();
@@ -145,39 +145,40 @@ const SetNameDialog = withStyles(styles)((props) => {
   // Check if we are doing 1, 2 or 3 transactions in this modal depening on if the name points at a resolver
   // and whether that resolver supports EIP2381. 
   useEffect(() => {
-    try {
+    if (props.open) {
       getResolver(props.ensName).then((address) => {
         console.log(`${props.ensName} does have a resolver contract set. ${address}`)
-        setResolverAddress(address)
         checkResolverSupportsInterface(address, '0x4b23de55').then((supported) => {
           if (!!supported) {
             logger.debug(`${props.ensName} has a resolver set: ${address}, and it does support EIP 2381: ${supported.toString()}`)
             setResolverSupportsEip2381(true)
+            // Because this address already supports EIP2381, no need to overwrite it
+            setResolverAddress(address)
             // Given the right resolver is set, check if `addr` is set to the target contract address.
-            getAddr(props.ensName).then((addr)=>{
+            getAddr(props.ensName).then((addr) => {
               console.log(`Resolver 'addr' field already points at: ${addr}, we want to set it to: ${props.contractAddress}. Do they match? ${(addr.toLowerCase() === props.contractAddress.toLowerCase()).toString()}`)
-              if(addr.toLowerCase() === props.contractAddress.toLowerCase()) {
+              if (addr.toLowerCase() === props.contractAddress.toLowerCase()) {
                 setContractAddressSet(true)
               }
               else {
                 console.log('Updating this name to point at a new address than the one currently set')
                 setContractAddressSet(false)
               }
-            }).catch((err)=>{
+            }).catch((err) => {
               setContractAddressSet(false)
             })
 
             // Given an EIP2381 resolver, check if tokenId is what we want it to be
-            getTokenId(props.ensName, address).then((tokenId)=>{
+            getTokenId(props.ensName, address).then((tokenId) => {
               console.log(`Resolver tokenId currently points at: ${tokenId}, we want to set it to: ${props.tokenId}`)
-              if(tokenId === props.tokenId) {
+              if (tokenId === props.tokenId) {
                 setTokenIdSet(true)
               }
               else {
                 console.log('Updating this name to point at a new tokenId than the one currently set')
                 setTokenIdSet(false)
               }
-            }).catch((err)=>{
+            }).catch((err) => {
               console.error(`Exception thrown getting tokenId set for ${props.ensName} at resolver contract: ${address}`)
               console.error(err)
               setTokenIdSet(false)
@@ -187,11 +188,12 @@ const SetNameDialog = withStyles(styles)((props) => {
             setResolverSupportsEip2381(false)
           }
         })
+      }).catch((e) => {
+        console.error(`There was trouble checking if ${props.ensName} has an EIP2381 resolver set.`)
+        console.error(e)
       })
-    } catch (e) {
-      console.error(`There was trouble checking if ${props.ensName} has an EIP2381 resolver set.`)
-      console.error(e)
     }
+
     return () => { }
   }, [props.open, props.ensName, props.contractAddress, props.tokenId])
 
@@ -310,10 +312,10 @@ const SetNameDialog = withStyles(styles)((props) => {
     <div>
       <Dialog onClose={onClose} aria-labelledby="customized-dialog-title" open={open}>
         <DialogTitle id="customized-dialog-title" onClose={onClose}>
-          You have 
+          You have
           {" " + [!resolverSupportsEip2381, !contractAddressSet, !tokenIdSet].filter(Boolean).length.toString() + " "}
            transaction
-           {([!resolverSupportsEip2381, !contractAddressSet, !tokenIdSet].filter(Boolean).length !== 1) ? "s " : " "} 
+           {([!resolverSupportsEip2381, !contractAddressSet, !tokenIdSet].filter(Boolean).length !== 1) ? "s " : " "}
            to send
         </DialogTitle>
         <DialogContent dividers>
@@ -323,37 +325,37 @@ const SetNameDialog = withStyles(styles)((props) => {
                 <Avatar className={classes.avatar}><InsertDriveFileOutlined fontSize="small" /></Avatar>
               </ListItemAvatar>
               <ListItemText secondary={`Tell ENS what contract manages ${props.ensName}`}>
-              {!resolverTxInProgress && !resolverSupportsEip2381 &&<div><b>1.</b> Set a resolver contract</div>}
-              {resolverTxInProgress && <div><b>1.</b> Setting resolver</div>}
-              {resolverSupportsEip2381 && <div><b>1.</b> Resolver supports NFTs</div>}
+                {!resolverTxInProgress && !resolverSupportsEip2381 && <div><b>1.</b> Set a resolver contract</div>}
+                {resolverTxInProgress && <div><b>1.</b> Setting resolver</div>}
+                {resolverSupportsEip2381 && <div><b>1.</b> Resolver supports NFTs</div>}
               </ListItemText>
-              {resolverTxInProgress && <CircularProgress  className={classes.buttonProgress} />}
+              {resolverTxInProgress && <CircularProgress className={classes.buttonProgress} />}
               {!resolverTxInProgress && !resolverSupportsEip2381 && !resolverTxSucceeded && <SendIcon color={'secondary'} />}
               {!resolverTxInProgress && (resolverSupportsEip2381 || resolverTxSucceeded) && <DoneIcon color={'secondary'} />}
             </ListItem>
-            <ListItem button disabled={addressTxInProgress || contractAddressSet } onClick={handleSetAddressClick}>
+            <ListItem button disabled={addressTxInProgress || contractAddressSet} onClick={handleSetAddressClick}>
               <ListItemAvatar >
                 <Avatar className={classes.avatar}><DescriptionOutlinedIcon fontSize="small" /></Avatar>
               </ListItemAvatar>
               <ListItemText secondary={`Send ENS lookups for ${props.ensName} to this address`}>
-              {!addressTxInProgress && !contractAddressSet && !addressTxSucceeded && <div><b>2.</b> Set the resolver to point at the contract address</div>}
-              {addressTxInProgress && <div><b>2.</b> Setting address</div>}
-              {(contractAddressSet || addressTxSucceeded) && !addressTxInProgress && <div><b>2.</b> Contract Address Set</div>}
-                
+                {!addressTxInProgress && !contractAddressSet && !addressTxSucceeded && <div><b>2.</b> Set the resolver to point at the contract address</div>}
+                {addressTxInProgress && <div><b>2.</b> Setting address</div>}
+                {(contractAddressSet || addressTxSucceeded) && !addressTxInProgress && <div><b>2.</b> Contract Address Set</div>}
+
               </ListItemText>
-              {addressTxInProgress && <CircularProgress  className={classes.buttonProgress} />}
+              {addressTxInProgress && <CircularProgress className={classes.buttonProgress} />}
               {!addressTxInProgress && !addressTxSucceeded && !contractAddressSet && <SendIcon color={'secondary'} />}
-              {!addressTxInProgress && ( addressTxSucceeded || contractAddressSet ) && <DoneIcon color={'secondary'} />}
+              {!addressTxInProgress && (addressTxSucceeded || contractAddressSet) && <DoneIcon color={'secondary'} />}
             </ListItem>
-            <ListItem button disabled={tokenTxInProgress || tokenIdSet } onClick={handleSetTokenClick}>
+            <ListItem button disabled={tokenTxInProgress || tokenIdSet} onClick={handleSetTokenClick}>
               <ListItemAvatar>
                 <Avatar className={classes.avatar}><NftIcon fontSize="small" /></Avatar></ListItemAvatar>
               <ListItemText secondary="Highlight the specifc NFT you had in mind">
-              {!tokenTxInProgress && !tokenIdSet && !tokenTxSucceeded && <div><b>3.</b> Set the token ID field for {props.ensName}</div>}
-              {tokenTxInProgress && <div><b>3.</b> Setting token ID</div>}
-              {(tokenTxSucceeded || tokenIdSet) && <div><b>3.</b> Token ID Set</div>}
+                {!tokenTxInProgress && !tokenIdSet && !tokenTxSucceeded && <div><b>3.</b> Set the token ID field for {props.ensName}</div>}
+                {tokenTxInProgress && <div><b>3.</b> Setting token ID</div>}
+                {(tokenTxSucceeded || tokenIdSet) && <div><b>3.</b> Token ID Set</div>}
               </ListItemText>
-              {tokenTxInProgress && <CircularProgress  className={classes.buttonProgress} />}
+              {tokenTxInProgress && <CircularProgress className={classes.buttonProgress} />}
               {!tokenTxInProgress && !tokenTxSucceeded && !tokenIdSet && <SendIcon color={'secondary'} />}
               {!tokenTxInProgress && (tokenTxSucceeded || tokenIdSet) && <DoneIcon color={'secondary'} />}
             </ListItem>
