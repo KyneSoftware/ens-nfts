@@ -7,7 +7,7 @@ import { Grid, TextField, Button, makeStyles, Avatar, Typography, Link } from "@
 import FiberNewIcon from '@material-ui/icons/FiberNew';
 import namehash from 'eth-ens-namehash'
 import { getEnsOwner, nameExists, contractExists, checkContractSupportsInterface, tokenExists } from '../services/ens'
-import { ethers } from 'ethers'
+import { ethers, logger } from 'ethers'
 import SetNameDialog from "./SetNameDialog";
 
 const useStyles = makeStyles((theme) => ({
@@ -47,6 +47,7 @@ const ADDRESS_TEXT_INVALID_CHARS = 'Contract address should be a hexadecimal str
 const ADDRESS_TEXT_INCOMPLETE = 'Not the correct length for a contract address';
 const ADDRESS_TEXT_NONEXISTANT = 'Contract does not exist on this network';
 const ADDRESS_TEXT_NON_ERC721 = 'Contract is not an ERC721 type';
+const ADDRESS_TEXT_IS_ERC1155 = 'Contract is an ERC1155 multi token'
 const ADDRESS_TEXT_CHECKSUM_INVALID = 'The checksum for this address is incorrect';
 const ADDRESS_TEXT_UNKNOWN = 'Unknown Error Occurred';
 const ADDRESS_TEXT_ENTERED = 'The ERC721 Contract address';
@@ -227,7 +228,7 @@ export default function SetEnsToNft() {
     setContractAddressHelperText(ADDRESS_TEXT_ENTERED)
   }
 
-  // When exiting the contract field, check the address exists and that the address is ERC721 conformant
+  // When exiting the contract field, check the address exists and that the address is ERC721 conformant (or ERC1155)
   const onContractMouseOut = async (event) => {
     console.debug(`MouseOut of contract address, check if it exists.`)
     
@@ -254,19 +255,31 @@ export default function SetEnsToNft() {
 
     // Check contract responds to erc165 supportsInterface(721contractInterface)
     try {
-      // Now check if the current account is an admin of the address
-      console.debug(`Checking if ${contractAddress} has erc165 support, and subsequently if it interfaces ERC721.`)
+      console.debug(`Checking if ${contractAddress} has erc165 support, and subsequently if it interfaces ERC721 or ERC1155.`)
       checkContractSupportsInterface(contractAddress, '0x80ac58cd').then((supported)=>{
         if(!supported) {
           if (validContractAddress) {
-            setContractAddressHelperText(ADDRESS_TEXT_NON_ERC721)
+            // The address is valid, but it doesn't conform to ERC721, check if it's ERC1155 or error
+            checkContractSupportsInterface(contractAddress, '0xd9b67a26').then((is1155)=>{
+              if(is1155 === true)
+              {
+                setContractAddressHelperText(ADDRESS_TEXT_IS_ERC1155)
+                setValidContractAddress(true)
+                return
+              } else {
+                // Contract is neither 721 nor 1155 compliant, display error
+                setContractAddressHelperText(ADDRESS_TEXT_NON_ERC721)
+                setValidContractAddress(false)
+              }
+            }) 
           }
-          setValidContractAddress(false)
+        } else {
+          console.debug(`${contractAddress} supports ERC721's interface`)
         }
       })
       
     } catch (e) {
-      console.error(`There was an issue checking if ${contractAddress.toString()} was an ERC721 contract.`)
+      console.error(`There was an issue checking if ${contractAddress.toString()} was an ERC721 or ERC1155 contract.`)
       console.error(e)
       setValidContractAddress(false)
     }
@@ -320,14 +333,6 @@ export default function SetEnsToNft() {
     console.log('Setting  resolver for: ' + ensName)
     setIsLoading(true)
     setSetNameClicked(true)
-
-    // setTimeout(() => {
-    //   // setValidEnsName(false)
-    //   // setValidTokenId(false)
-    //   // setValidContractAddress(false)
-    //   setIsLoading(false)
-    // }, 1000)
-
   }
 
 
