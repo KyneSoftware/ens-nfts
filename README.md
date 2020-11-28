@@ -2,6 +2,8 @@
   Name your Ethereum NFT with ENS
 </h1>
 
+<b><a href="https://nft.kyne.eu" target="_blank">View the site</a></b>
+
 The Ethereum Name Service (ENS) is a valuable piece of the Ethereum infrastructure. Much like DNS bridges the human readable with the computer readable for internet addresses; ENS puts human friendly names on top of Ethereum addresses. 
 
 But an ENS name can contain more information that just an ethereum address. An ENS resolver can address:
@@ -62,10 +64,10 @@ If you support ENS names in your application, and you want to add in NFT support
 - [x] Get the search name field to not autocorrect with spacing and capitalisation on mobile
 - [x] Don't error if there is uppercase letters in an ENS name, they are taken care of in normalisation
 - [x] Centre title
-- [ ] Setup debug, info and error logging
-- [ ] Create social link preview images
+- [x] Setup debug, info and error logging
+- [x] Create social link preview images
 - [ ] Handle the crash if you try and set a name to a cryptopunk
-- [ ] Consider being less strict about enforcing ERC721 conformance
+- [x] Consider being less strict about enforcing ERC721 conformance
 - [ ] Set repo public
-- [ ] Reverse resolve ENS names of owners
+- [x] Reverse resolve ENS names of owners
 - [ ] Pull NFT Metadata and render after a search

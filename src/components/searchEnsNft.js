@@ -218,7 +218,6 @@ export default function SearchEns() {
 
                       } else {
                         // This address is not ERC721
-                        setNftFound(false)
                         setIsLoading(false)
                         closeSnackbar()
                         setHelperText(FOUND_NOT_EIP721_TEXT)
@@ -512,7 +511,10 @@ export default function SearchEns() {
                 </ListItemText>
               </ListItem>
             }
-            <Divider />
+            {
+              nftOwner &&
+              <Divider />
+            }
             {
               nftOwner &&
               <ListItem>
@@ -541,7 +543,10 @@ export default function SearchEns() {
                 </ListItemText>
               </ListItem>
             }
-            <Divider />
+            {
+              isERC1155 &&
+              <Divider />
+            }
             {
               isERC1155 &&
               <ListItem>
@@ -552,7 +557,7 @@ export default function SearchEns() {
                       "View on Opensea"
                     }
                   </Link>
-                  
+
                 </ListItemText>
               </ListItem>
             }
