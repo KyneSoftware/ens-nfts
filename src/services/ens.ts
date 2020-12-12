@@ -210,8 +210,8 @@ export async function setResolver(name: string): Promise<string> {
     })
 }
 
-// Queries a resolver contract to see if it supports a specific set of functions (EIP-165 supportsInterface)
-export async function checkResolverSupportsInterface(resolverAddress: string, interfaceId: string): Promise<boolean> {
+// Queries a smart contract to see if it supports a specific set of functions (EIP-165 supportsInterface)
+export async function checkSupportsInterface(resolverAddress: string, interfaceId: string): Promise<boolean> {
     const { ethereum } = typeof window !== `undefined` ? window as any : null
     const provider = new ethers.providers.Web3Provider(ethereum)
     const resolver = new ethers.Contract(resolverAddress, eip2381ResolverAbi, provider);

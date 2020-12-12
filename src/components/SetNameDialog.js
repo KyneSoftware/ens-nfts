@@ -17,7 +17,7 @@ import Typography from '@material-ui/core/Typography';
 import { ListItem, List, ListItemText, ListItemAvatar, Avatar, CircularProgress } from '@material-ui/core';
 import { NftIcon } from './NftIcon';
 import { useSnackbar } from 'notistack';
-import { getResolver, checkResolverSupportsInterface, setResolver, setAddr, getAddr, getTokenId, setTokenId } from '../services/ens';
+import { getResolver, checkSupportsInterface, setResolver, setAddr, getAddr, getTokenId, setTokenId } from '../services/ens';
 import { grey, green, red } from '@material-ui/core/colors';
 import { logger } from '../config/pino';
 
@@ -148,7 +148,7 @@ const SetNameDialog = withStyles(styles)((props) => {
     if (props.open) {
       getResolver(props.ensName).then((address) => {
         console.log(`${props.ensName} does have a resolver contract set. ${address}`)
-        checkResolverSupportsInterface(address, '0x4b23de55').then((supported) => {
+        checkSupportsInterface(address, '0x4b23de55').then((supported) => {
           if (!!supported) {
             logger.debug(`${props.ensName} has a resolver set: ${address}, and it does support EIP 2381: ${supported.toString()}`)
             setResolverSupportsEip2381(true)

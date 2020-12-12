@@ -6,8 +6,8 @@ import React, { useState, useEffect } from "react"
 import { Grid, TextField, Button, makeStyles, Avatar, Typography, Link } from "@material-ui/core"
 import FiberNewIcon from '@material-ui/icons/FiberNew';
 import namehash from 'eth-ens-namehash'
-import { getEnsOwner, nameExists, contractExists, checkContractSupportsInterface, tokenExists, multiTokenExists } from '../services/ens'
-import { ethers, logger } from 'ethers'
+import { getEnsOwner, nameExists, contractExists, checkContractSupportsInterface, tokenExists } from '../services/ens'
+import { ethers } from 'ethers'
 import SetNameDialog from "./SetNameDialog";
 
 const useStyles = makeStyles((theme) => ({
