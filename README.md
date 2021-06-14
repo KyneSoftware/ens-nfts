@@ -5,7 +5,9 @@
 </h1>
 
 
-<p align="center">![Main Workflow](https://github.com/KyneSoftware/ens-nfts/actions/workflows/main.yaml/badge.svg)</p>
+<p align="center">
+  <img src="https://github.com/KyneSoftware/ens-nfts/actions/workflows/main.yaml/badge.svg" />
+</p>
 <p align="center">An extension to EIP-721 making NFTs addressable by the Ethereum Name Service</p>
 
 ## Proposal
