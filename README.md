@@ -1,8 +1,14 @@
+![Kyne Software Logo](./static/SocialPreviewKS.png)
+
 <h1 align="center">
   Name your Ethereum NFT with ENS
 </h1>
 
-<b><a href="https://nft.kyne.eu" target="_blank">View the site</a></b>
+<p align="center">An extension to EIP-721 making NFTs addressable by the Ethereum Name Service</p>
+
+![Main Workflow](https://github.com/KyneSoftware/ens-nfts/actions/workflows/main.yaml/badge.svg)
+
+## Proposal
 
 The Ethereum Name Service (ENS) is a valuable piece of the Ethereum infrastructure. Much like DNS bridges the human readable with the computer readable for internet addresses; ENS puts human friendly names on top of Ethereum addresses. 
 
@@ -20,7 +26,7 @@ But there was one thing I found was missing. You can point a name at an ERC20 to
 
 This repo is a lightweight front end for setting ENS names to point at individual NFTs within an ERC721 contract. Use this site to set ENS names for your most valuable non-fungibles, to really help people appreciate the one-of-a-kind nature of your token. People already know domain names are unique, use that to make your tokens more unique. 
 
-# What is EIP 2381?
+### What is EIP 2381?
 
 [EIP 2381](https://github.com/ethereum/EIPs/pull/2381) is a small extension to the ENS spec which adds another resolver profile `tokenId`. This allows an ENS resolver contract to return both an address and a tokenID for a given name, allowing the naming scheme to differentiate individual NFTs within an ERC721 contract.
 
@@ -29,7 +35,7 @@ This repo is a lightweight front end for setting ENS names to point at individua
   function setTokenID(bytes32 node, uint256 token);
 ```
 
-## How to tell if a given ENS name points at an NFT? 
+### How to tell if a given ENS name points at an NFT? 
 
 If you support ENS names in your application, and you want to add in NFT support with EIP2381, here is how you should go about resolving an ENS name. 
 - Given an ENS name, first look up it's resolver contract.
@@ -41,7 +47,19 @@ If you support ENS names in your application, and you want to add in NFT support
   - If the resolver contract *does support* EIP2381, you should call the function: `tokenID(bytes32 node)` on the resolver contract.
     - If the `tokenID` function returns 0, you can assume that this name is not addressing a specific NFT. (0 is not a valid tokenID in the ERC721 standard).
     - If the `tokenID` function returns a non-zero value, this name is addressing a specific NFT within the contract.
-- If a `tokenID` is set on the resolver contract, it is advised that you verify that this `tokenID` exists within the ERC721 contract, and hasn't been burned or never been minted, for example. 
+- If a `tokenID` is set on the resolver contract, it is advised that you verify that this `tokenID` exists within the ERC721 contract, and hasn't been burned or never been minted, for example.
+
+## Quickstart
+
+This repo uses Gatsby.js as a build tool that makes server side rendering-capable static webpages, that can then instantiate themselves as React Webpages when loaded on the client side. This allows for faster loading of web pages. To get started:
+
+```bash
+# Local development
+npm run develop
+
+# Tests
+npm run test
+```
 
 ## To Do for this Repo
 - [x] Redeploy to nft.kyne.eu
