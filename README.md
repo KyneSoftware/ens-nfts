@@ -63,31 +63,7 @@ npm run develop
 npm run test
 ```
 
-## To Do for this Repo
-- [x] Redeploy to nft.kyne.eu
-- [x] Deploy it to the web
-- [x] Get an SSL cert sorted
-- [x] Get the set a name working
-    - [x] ENS Name field should query the existence of the name in the registry
-    - [x] NFT contract address should query the contract exists and responds to ERC165 asking if its an NFT
-    - [x] Token ID should check if it exists in the NFT
-    - [x] These checks should run as effects rather than as onBlurs, maybe with a debounce
-    - [x] Set Name should launch a confirmation modal
-    - [x] Confirmation modal should launch a metamask transaction(s)
-- [x] Get a metamask icon above the connect metamask button
-- [x] Get a better NFT found display (flashy icon, no line wrapping, maybe getting NFT metadata?)
-- [x] Get click to copy to clipboard buttons working for NFT found data
-- [x] Have search and set buttons disabled until metamask is connected
-- [x] Get colour schemes fixed up (primary + secondary, snackbars)
-- [x] Make a robust readme describing EIP2381
-- [ ] Get gap beneath search box closed when a search hasn't been completed.
-- [x] Get the search name field to not autocorrect with spacing and capitalisation on mobile
-- [x] Don't error if there is uppercase letters in an ENS name, they are taken care of in normalisation
-- [x] Centre title
-- [x] Setup debug, info and error logging
-- [x] Create social link preview images
+## To Do
 - [ ] Handle the crash if you try and set a name to a cryptopunk
-- [x] Consider being less strict about enforcing ERC721 conformance
 - [ ] Set repo public
-- [x] Reverse resolve ENS names of owners
 - [ ] Pull NFT Metadata and render after a search
