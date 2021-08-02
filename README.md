@@ -1,8 +1,16 @@
+![Kyne Software Logo](./static/SocialPreviewKS.png)
+
 <h1 align="center">
   Name your Ethereum NFT with ENS
 </h1>
 
-<b><a href="https://nft.kyne.eu" target="_blank">View the site</a></b>
+
+<p align="center">
+  <img src="https://github.com/KyneSoftware/ens-nfts/actions/workflows/main.yaml/badge.svg" />
+</p>
+<p align="center">An extension to EIP-721 making NFTs addressable by the Ethereum Name Service</p>
+
+## Proposal
 
 The Ethereum Name Service (ENS) is a valuable piece of the Ethereum infrastructure. Much like DNS bridges the human readable with the computer readable for internet addresses; ENS puts human friendly names on top of Ethereum addresses. 
 
@@ -20,7 +28,7 @@ But there was one thing I found was missing. You can point a name at an ERC20 to
 
 This repo is a lightweight front end for setting ENS names to point at individual NFTs within an ERC721 contract. Use this site to set ENS names for your most valuable non-fungibles, to really help people appreciate the one-of-a-kind nature of your token. People already know domain names are unique, use that to make your tokens more unique. 
 
-# What is EIP 2381?
+### What is EIP 2381?
 
 [EIP 2381](https://github.com/ethereum/EIPs/pull/2381) is a small extension to the ENS spec which adds another resolver profile `tokenId`. This allows an ENS resolver contract to return both an address and a tokenID for a given name, allowing the naming scheme to differentiate individual NFTs within an ERC721 contract.
 
@@ -29,7 +37,7 @@ This repo is a lightweight front end for setting ENS names to point at individua
   function setTokenID(bytes32 node, uint256 token);
 ```
 
-## How to tell if a given ENS name points at an NFT? 
+### How to tell if a given ENS name points at an NFT? 
 
 If you support ENS names in your application, and you want to add in NFT support with EIP2381, here is how you should go about resolving an ENS name. 
 - Given an ENS name, first look up it's resolver contract.
@@ -41,33 +49,21 @@ If you support ENS names in your application, and you want to add in NFT support
   - If the resolver contract *does support* EIP2381, you should call the function: `tokenID(bytes32 node)` on the resolver contract.
     - If the `tokenID` function returns 0, you can assume that this name is not addressing a specific NFT. (0 is not a valid tokenID in the ERC721 standard).
     - If the `tokenID` function returns a non-zero value, this name is addressing a specific NFT within the contract.
-- If a `tokenID` is set on the resolver contract, it is advised that you verify that this `tokenID` exists within the ERC721 contract, and hasn't been burned or never been minted, for example. 
+- If a `tokenID` is set on the resolver contract, it is advised that you verify that this `tokenID` exists within the ERC721 contract, and hasn't been burned or never been minted, for example.
 
-## To Do for this Repo
-- [x] Redeploy to nft.kyne.eu
-- [x] Deploy it to the web
-- [x] Get an SSL cert sorted
-- [x] Get the set a name working
-    - [x] ENS Name field should query the existence of the name in the registry
-    - [x] NFT contract address should query the contract exists and responds to ERC165 asking if its an NFT
-    - [x] Token ID should check if it exists in the NFT
-    - [x] These checks should run as effects rather than as onBlurs, maybe with a debounce
-    - [x] Set Name should launch a confirmation modal
-    - [x] Confirmation modal should launch a metamask transaction(s)
-- [x] Get a metamask icon above the connect metamask button
-- [x] Get a better NFT found display (flashy icon, no line wrapping, maybe getting NFT metadata?)
-- [x] Get click to copy to clipboard buttons working for NFT found data
-- [x] Have search and set buttons disabled until metamask is connected
-- [x] Get colour schemes fixed up (primary + secondary, snackbars)
-- [x] Make a robust readme describing EIP2381
-- [ ] Get gap beneath search box closed when a search hasn't been completed.
-- [x] Get the search name field to not autocorrect with spacing and capitalisation on mobile
-- [x] Don't error if there is uppercase letters in an ENS name, they are taken care of in normalisation
-- [x] Centre title
-- [x] Setup debug, info and error logging
-- [x] Create social link preview images
+## Quickstart
+
+This repo uses Gatsby.js as a build tool that makes server side rendering-capable static webpages, that can then instantiate themselves as React Webpages when loaded on the client side. This allows for faster loading of web pages. To get started:
+
+```bash
+# Local development
+npm run develop
+
+# Tests
+npm run test
+```
+
+## To Do
 - [ ] Handle the crash if you try and set a name to a cryptopunk
-- [x] Consider being less strict about enforcing ERC721 conformance
 - [ ] Set repo public
-- [x] Reverse resolve ENS names of owners
 - [ ] Pull NFT Metadata and render after a search

@@ -441,7 +441,7 @@ export default function SetEnsToNft() {
         <SetNameDialog open={showDialog} onClose={onModalClose} contractAddress={contractAddress} tokenId={tokenId} ensName={ensName} />
         <Grid container justify="flex-end">
           <Grid item>
-            <Link href="https://github.com/OisinKyne/ens_nfts/issues/" variant="body2" className={classes.link} target="_blank" rel="noreferrer">
+            <Link href="https://github.com/KyneSoftware/ens-nfts/issues" variant="body2" className={classes.link} target="_blank" rel="noreferrer">
               Bug report? Click Here
             </Link>
           </Grid>
